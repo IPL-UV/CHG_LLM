@@ -1,0 +1,11 @@
+variables: 
+  - name : SMK
+    description : "average amount of tobacco smoked per day" 
+  - name : LC
+    description : "if suffering from lung cancer or not" 
+  - name : FH
+    description : "if lung cancer is present in the family medical history" 
+  - name : PN
+    description : "if suffering from pneumonia or not" 
+context: "Variables observed at individual level in a homogeneous population" 
+field: "medical science"  
