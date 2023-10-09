@@ -16,8 +16,8 @@
 - `cp .env.example .env` generate the `.env` file 
 - add your openai API key into the `.env` file (.env is already ignored in the `.gitignore` file but doubel check you are not pushing it) 
 - `python example.py`  to run a simple example 
-- For running a specific CI test var1, var2| (var3, var4,...) 
-`python scripts\ci_test.py var1 var2 [var3] [var4] ...`
+- For running a specific CI test var1, var2| (var3, var4,...)
+  `python scripts\ci_test.py var1 var2 [var3] [var4] ...`
 
 
 
