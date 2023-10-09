@@ -1,9 +1,11 @@
 import os
+import sys
 import yaml
 import openai
 
 from dotenv import load_dotenv
 
+sys.path.append('.')
 from gptci import *
 
 # load enviromental variables from .env
