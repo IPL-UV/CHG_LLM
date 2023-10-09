@@ -1,0 +1,19 @@
+variables: 
+  - name: Match
+    description: "whether matches were used or not"
+  - name : Fire
+    description : "whether there is fire in the barn or not" 
+  - name : Smoking farmer
+    description : "whether the farmer is smoking a cigarette in the barn or not"
+  - name : Smoke
+    description : "whether there is smoke in the barn or not"
+  - name : Lightning
+    description : "whether lightning hit the barn or not"
+  - name : Alarm
+    description : "whether the fire alarm has been triggered or not"
+  - name: Water Sprinkler
+    description : "whether a water sprinkler system has been activated or not"
+  - name: Barn burns
+    description: "whether the barn is burning or not"
+context: "Variables observed at a countryside barn." 
+field: "fire investigation"

@@ -1,0 +1,13 @@
+variables: 
+  - name: Burglary
+    description: "whether a burglary is in progress or not"
+  - name : Earthquake
+    description : "whether there was an earthquake or not"
+  - name : Alarm
+    description : "whether the alarm is ringing or not"
+  - name : Call
+    description : "whether the alarm company called or not"
+  - name : Radio
+    description : "whether the radio informed about an earthquake or not"
+context: "Variables observed at a house that has a burglar alarm system." 
+field: "security"

@@ -1,0 +1,15 @@
+variables: 
+  - name: Rain
+    description: "whether it previously rained or not"
+  - name : Sprinkler
+    description : "whether the sprinkler is on or off" 
+  - name : Wet grass
+    description : "whether the grass is wet or not" 
+  - name : Cloudy
+    description : "whether the sky is cloudy or not" 
+  - name: Season
+    description : "specifies the current season (e.g., summer, winter, etc.)."
+  - name: Grass is slippery
+    description: "whether the grass is slippery or not"
+context: "Variables observed in front of someone's house." 
+field: "lawn maintenance"

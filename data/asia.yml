@@ -1,0 +1,19 @@
+variables: 
+  - name: Asia
+    description: "whether a person has recently visited Asia"
+  - name : tuberculosis
+    description : "whether a person has tuberculosis or not"
+  - name : lung cancer
+    description : "whether a person has lung cancer or not"
+  - name : smoking
+    description : "whether a person smokes or not"
+  - name : bronchitis
+    description : "whether a person has bronchitis or not"
+  - name : dyspnoea
+    description : "whether a person is experiencing shortness of breath or not"
+  - name: positive X-ray
+    description : " Denotes a positive result from a chest X-ray."
+  - name: Either tuberculosis or lung cancer
+    description: "whether a person has either tuberculosis or lung cancer or both"
+context: "Variables observed at individual level in a homogeneous population" 
+field: "medicine"

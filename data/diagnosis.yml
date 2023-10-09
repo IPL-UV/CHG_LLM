@@ -1,0 +1,23 @@
+variables:  
+  - name: Fatty foods
+    description: "whether the person eats fatty foods on a regular basis or not"
+  - name : Arteriosclerosis
+    description : "whether the person has arteriosclerosis or not" 
+  - name : Right Heart Syndrome
+    description : "whether the person has right heart syndrome or not"
+  - name : Left Heart Syndrome
+    description : "whether the person has left heart syndrome or not"
+  - name : Lungs sound funny
+    description : "whether the person's lungs sound funny or not"
+  - name : Difficulty breathing
+    description : "whether the person has difficulty breathing or not"
+  - name: Cough up blood
+    description : "whether the person coughs up blood or not"
+  - name: Smoking
+    description: "whether the person smokes or not"
+  - name: Radon
+    description: "whether the person is exposed to radon or not"
+  - name: Lung Cancer
+    description: "whether the person has lung cancer or not"
+context: "Variables observed at individual level in a homogeneous population" 
+field: "medicine"
