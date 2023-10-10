@@ -10,18 +10,24 @@ INST0 = ("When asked to provide estimates and "
 
 INST1 = ("You will be asked to provide your estimate and confidence "
         "on statistical independence between two variables "
-        "(eventually conditioned on a set of variables).")
+        "(eventually conditioned on a set of variables)."
+        "Answer only in the required format.")
 
 
 INST2 = ("You will be asked to provide your estimate and confidence "
         "on statistical independence between two variables "
         "(eventually conditioned on a set of variables).\n"
         "First argue and dicuss the reasoning behind the answer, "
-        "and finally provide the requested anser in the required format")
+        "and finally provide the requested answer in the required format")
 
-INDEP = "{x} is statistically independent of {y}"
+INDEP = "{x} is independent of {y}"
 CINDEP = "{x} is independent of {y} given {z}"
-RSPTMPL = ("After expalining your reasoning, please provide the answer as YES/NO "
+
+RSPTMPL0 = ("Provide the answer as YES/NO "
+           "with percentage uncertainty between brackets."
+           " For example \n NO [90%]")
+
+RSPTMPL1 = ("After expalining your reasoning, please provide the answer as YES/NO "
            "with percentage uncertainty between brackets."
            " For example \n NO [90%]")
 
@@ -45,10 +51,12 @@ def get_var_descritpions(x,y,z, data):
     vs = (x,y)
     if z is not None:
         vs = vs + z
-    out = "Consider the following variables:\n"
+    out = """Given {context}.\n
+             Consider the following variables:\n
+             """.format(**data)
     for v in data['variables']:
         if v['name'] in vs:
-            out = out + "{name}: {description}\n".format(**v) 
+            out = out + "- {name}: {description}\n".format(**v) 
     return out
 
 def get_ci(x,y,z):
@@ -75,25 +83,33 @@ data : dict
  at a aminimum it should contain variable descriptions
 temperature: float, default = 0.6
  The temperature parameter for the language model 
-model: str, default =
+model: str, default = "gpt-3.5-turbo"
+ The name of the openai model to be called
+instruction: str, default = INST1 
+ The instruction on the task 
+response_template: str
+ The response instuction with template 
 """
-def gpt_ci(x, y, z=None, data=None, temperature=None, model="gpt-3.5-turbo"):
+def gpt_ci(x, y, z=None, data=None, temperature=None, model="gpt-3.5-turbo",
+           instruction = INST2, response_template = RSPTMPL1):
 
     persona = get_persona(data)
     context = get_context(data)
-    instruction = INST2
     vdescription = get_var_descritpions(x,y,z,data)
     ci = get_ci(x,y,z)
-    response_template = RSPTMPL
-    response = openai.ChatCompletion.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": persona},
-                {"role": "system", "content": instruction},
-                {"role": "user", "content": vdescription},
-                {"role": "user", "content": ci},
-                {"role": "system", "content": response_template}
-    ])
+    # TODO pass temperature parameter
+    try:
+        response = openai.ChatCompletion.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": persona},
+                    {"role": "system", "content": instruction},
+                    {"role": "user", "content": vdescription},
+                    {"role": "user", "content": ci},
+                    {"role": "system", "content": response_template}
+                    ])
+    except Exception as inst:
+        return None
 
     result = parse_response(response,x,y,z,data)
     return result 
