@@ -28,6 +28,6 @@ print(out)
 
 
 print("asking if SMK and PN are independent given LC") 
-out2 = gpt_ci("SMK", "PN", ("LC",), data)
+out2 = gpt_ci("SMK", "PN", ["LC"], data)
 
 print(out2)

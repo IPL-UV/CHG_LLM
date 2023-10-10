@@ -9,3 +9,17 @@ variables:
     description : "if suffering from pneumonia or not" 
 context: "Variables observed at individual level in a homogeneous population" 
 field: "medical science"  
+ci-statements:
+  - x: SMK
+    y: LC
+    z: null
+    answ: No
+  - x: LC
+    y: FH
+    z: null
+    answ: No
+  - x: LC
+    y: SMK
+    z: 
+      - FH
+    answ: No

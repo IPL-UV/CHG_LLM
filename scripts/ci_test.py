@@ -23,7 +23,7 @@ def ci_test(var1, var2, additional_vars, yaml_file):
     print("---------------")
 
     print(f"asking if {var1} and {var2} are independent given {additional_vars}")
-    out = gpt_ci(var1, var2, (additional_vars,), data)
+    out = gpt_ci(var1, var2, [additional_vars], data)
     
     return out
 
