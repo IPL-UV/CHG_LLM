@@ -3,12 +3,13 @@ import sys
 import yaml
 
 from dotenv import load_dotenv
+from pgmpy.base import DAG
 
 sys.path.append('.')
 from gptci import *
+import random
 
 def evaluate_all_cis(data, ):
-
 
 
 def main():
@@ -28,7 +29,6 @@ def main():
 
     for v in data['variables']:
         print("{name}: {description}".format(**v))
-
     
     result = ci_test(args.var1, args.var2, args.additional_vars, args.yaml_file)
     print(result)

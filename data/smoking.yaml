@@ -23,3 +23,12 @@ ci-statements:
     z: 
       - FH
     answ: No
+graph:
+  - from: SMK
+    to: LC
+  - from: FH
+    to: LC
+  - from: LC
+    to: PN
+  - from: SMK
+    to: PN

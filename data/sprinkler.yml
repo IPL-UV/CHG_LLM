@@ -1,15 +1,24 @@
 variables: 
-  - name: Rain
+  - name: R
     description: "whether it previously rained or not"
-  - name : Sprinkler
+  - name : SP
     description : "whether the sprinkler is on or off" 
-  - name : Wet grass
+  - name : GW
     description : "whether the grass is wet or not" 
-  - name : Cloudy
-    description : "whether the sky is cloudy or not" 
-  - name: Season
+  - name: S
     description : "specifies the current season (e.g., summer, winter, etc.)."
-  - name: Grass is slippery
+  - name: GS
     description: "whether the grass is slippery or not"
 context: "Variables observed in front of someone's house." 
 field: "lawn maintenance"
+graph:
+  - from: S
+    to: R
+  - from: S
+    to: SP
+  - from: SP
+    to: GW
+  - from: R
+    to: GW
+  - from: GW
+    to: GS

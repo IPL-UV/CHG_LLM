@@ -1,19 +1,38 @@
 variables: 
-  - name: Match
+  - name: M
     description: "whether matches were used or not"
-  - name : Fire
+  - name : F
     description : "whether there is fire in the barn or not" 
-  - name : Smoking farmer
+  - name : SF
     description : "whether the farmer is smoking a cigarette in the barn or not"
-  - name : Smoke
+  - name : S
     description : "whether there is smoke in the barn or not"
-  - name : Lightning
+  - name : L
     description : "whether lightning hit the barn or not"
-  - name : Alarm
+  - name : A
     description : "whether the fire alarm has been triggered or not"
-  - name: Water Sprinkler
+  - name: WS
     description : "whether a water sprinkler system has been activated or not"
-  - name: Barn burns
+  - name: BB
     description: "whether the barn is burning or not"
 context: "Variables observed at a countryside barn." 
 field: "fire investigation"
+graph:
+  - from: M
+    to: F
+  - from: L
+    to: F
+  - from: M
+    to: SF
+  - from: SF
+    to: S
+  - from: F
+    to: S
+  - from: S
+    to: D
+  - from: D
+    to: WS
+  - from: F
+    to: BB
+  - from: WS
+    to: BB

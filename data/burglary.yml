@@ -1,13 +1,22 @@
 variables: 
-  - name: Burglary
+  - name: B
     description: "whether a burglary is in progress or not"
-  - name : Earthquake
+  - name : E
     description : "whether there was an earthquake or not"
-  - name : Alarm
+  - name : A
     description : "whether the alarm is ringing or not"
-  - name : Call
+  - name : C
     description : "whether the alarm company called or not"
-  - name : Radio
+  - name : R
     description : "whether the radio informed about an earthquake or not"
 context: "Variables observed at a house that has a burglar alarm system." 
 field: "security"
+graph:
+  - from: B
+    to: A
+  - from: E
+    to: A
+  - from: A
+    to: C
+  - from: E
+    to: R
