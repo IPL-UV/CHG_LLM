@@ -14,7 +14,8 @@ INST1 = ("You will be asked to provide your estimate and confidence "
         "(eventually conditioned on a set of variables)."
         "Your answer should not be based on data or observations "
         "but only on the available knowledge.\n"
-        "Answer only in the required format.")
+        "Even when unsure or uncertain provide a valid answer and uncertainty."
+        "Answer only in the required format. ")
 
 
 INST2 = ("You will be asked to provide your estimate and confidence "
@@ -112,12 +113,18 @@ response_template: str
  The response instuction with template 
 """
 def gpt_ci(x, y, z=None, data=None, temperature=None, model="gpt-3.5-turbo",
-           instruction = INST1, response_template = RSPTMPL1):
+           instruction = INST1, response_template = RSPTMPL1, verbose = False):
 
     persona = get_persona(data)
     context = get_context(data)
     vdescription = get_var_descritpions(data,x,y,z)
     ci = get_ci(x,y,z)
+    if verbose:
+        print(f"persona: {persona}")
+        print(f"instruction: {instruction}")
+        print(f"vdescription: {vdescription}")
+        print(f"ci: {ci}")
+        print(f"template: {response_template}")
     try:
         response = openai.ChatCompletion.create(
                 model=model,

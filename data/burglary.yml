@@ -9,7 +9,7 @@ variables:
     description : "whether the alarm company called or not"
   - name : R
     description : "whether the radio informed about an earthquake or not"
-context: "Variables observed at a house that has a burglar alarm system." 
+context: "Variables observed at a house that has a burglar alarm system. If the system is ringing, the alarm company is informed and makes a call to the owner." 
 field: "security"
 graph:
   - from: B
