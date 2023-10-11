@@ -39,6 +39,10 @@ def graph_CI_test(var1, var2, conditioning_set, dag):
             if var2 in list(CI.__dict__['event2']):
                 if sorted(conditioning_set) == sorted(list(CI.__dict__['event3'])):
                     return True
+        if var2 in list(CI.__dict__['event1']):
+            if var1 in list(CI.__dict__['event2']):
+                if sorted(conditioning_set) == sorted(list(CI.__dict__['event3'])):
+                    return True
     return False
 
 
