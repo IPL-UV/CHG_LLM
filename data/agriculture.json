@@ -1,0 +1,148 @@
+{
+  "topic_area": "agriculture",
+  "context": "We have a recommendation system in the form of daily maps over the fields of the farmers of a cooperative in Orchomenos, Greece. The sowing recommendation maps were served through the website of the cooperative that farmers visited on a daily basis. The cooperative collected and provided for each field: its geo-referenced boundaries, the sowing date, the seed variety, the harvest date, the precise final yield, and for a subset of the fields the yield of the previous year. We then combined this data with publicly available observations from heterogeneous sources, such as satellites (Sentinel-2), weather stations and GIS maps, to engineer an observational dataset that enables a causal analysis for studying the impact of the recommendation system on the yield. Agricultural practices prior, during and after sowing are considered to be the same for all fields of the cooperative.",
+  "variables": {
+    "T": {
+      "name": "Treatment",
+      "acronym": "T",
+      "description": "Field sowing recommendation based on weather forecasts and agro-environmental conditions provided by the recommendation system of the farmers' cooperative",
+      "source": "Farmers’ Cooperative"
+    },
+    "WF": {
+      "name": "Weather forecast",
+      "acronym": "WF",
+      "description": "Numerical weather predictions obtained from the Global Forecast System (GFS) and the Weather Research and Forecasting (WRF) model prior to sowing that define the decision of the recommendation system. soil(0-10cm, ambient(2m), soil(0-10cm), soil(0-10cm), ambient(2m)",
+      "source": "GFS, WRF"
+    },
+    "WS": {
+      "name": "Weather on sowing day",
+      "acronym": "WS",
+      "description": "Actual weather conditions recorded on the day of sowing obtained from the nearest weather station. min&max ambient temperature in◦C",
+      "source": "Nearest weather station"
+    },
+    "WaS": {
+      "name": "Weather after sowing",
+      "acronym": "WaS",
+      "description": "Weather conditions observed in the period after sowing (10 days) obtained from the nearest weather station. min&max ambienttemperaturein◦C",
+      "source": "Nearest weather station"
+    },
+    "CG": {
+      "name": "Crop Growth",
+      "acronym": "CG",
+      "description": "Development and progression of the cotton crop",
+      "source": "NDVI via Sentinel-2"
+    },
+    "SM": {
+      "name": "Soil Moisture on sowing",
+      "acronym": "SM",
+      "description": "Soil moisture on the day of sowing",
+      "source": "NDWI via Sentinel-2"
+    },
+    "SP": {
+      "name": "Topsoil properties",
+      "acronym": "SP",
+      "description": "Information on the percentage content of clay, silt, and sand in the topsoil obtained from the European Soil Data Centre (ESDAC)",
+      "source": "Map by ESDAC"
+    },
+    "SoC": {
+      "name": "Topsoil organic carbon",
+      "acronym": "SoC",
+      "description": "Data on the organic carbon content in the topsoil obtained from the European Soil Data Centre (ESDAC)",
+      "source": "Map by ESDAC"
+    },
+    "SV": {
+      "name": "Seed Variety",
+      "acronym": "SV",
+      "description": "Information about the seed variety used for planting obtained from the farmers' cooperative",
+      "source": "Farmers’ Cooperative"
+    },
+    "G": {
+      "name": "Geometry of field",
+      "acronym": "G",
+      "description": "Geometrical properties of the field including the perimeter to area ratio",
+      "source": "Farmers’ Cooperative"
+    },
+    "AdS": {
+      "name": "Practices during sowing",
+      "acronym": "AdS",
+      "description": "Information about the agricultural practices followed during sowing obtained from the farmers' cooperative",
+      "source": "Farmers’ Cooperative"
+    },
+    "AbS": {
+      "name": "Practices before sowing",
+      "acronym": "AbS",
+      "description": "Information about the agricultural practices followed before sowing obtained from the farmers' cooperative",
+      "source": "Farmers’ Cooperative"
+    },
+    "AaS": {
+      "name": "Practices after sowing",
+      "acronym": "AaS",
+      "description": "Information about the agricultural practices followed after sowing obtained from the farmers' cooperative",
+      "source": "Farmers’ Cooperative"
+    },
+    "HD": {
+      "name": "Harvest Date",
+      "acronym": "HD",
+      "description": "Information about the date of harvest obtained from the farmers' cooperative",
+      "source": "Farmers’ Cooperative"
+    },
+    "Y": {
+      "name": "Outcome (Yield)",
+      "acronym": "Y",
+      "description": "Actual cotton yield obtained from the farmers' cooperative",
+      "source": "Farmers’ Cooperative"
+    }
+  },
+  "causal_graph": {
+    "nodes": [
+      {"id": "AbS", "label": "Practices before sowing"},
+      {"id": "SM", "label": "Soil Moisture on sowing"},
+      {"id": "CG", "label": "Crop Growth"},
+      {"id": "T", "label": "Treatment"},
+      {"id": "WF", "label": "Weather forecast"},
+      {"id": "WS", "label": "Weather on sowing day"},
+      {"id": "SV", "label": "Seed Variety"},
+      {"id": "SP", "label": "Topsoil properties"},
+      {"id": "SoC", "label": "Topsoil organic carbon"},
+      {"id": "G", "label": "Geometry of field"},
+      {"id": "WaS", "label": "Weather after sowing"},
+      {"id": "Y", "label": "Outcome (Yield)"},
+      {"id": "HD", "label": "Harvest Date"}
+    ],
+    "edges": [
+      {"source": "AbS", "target": "SM"},
+      {"source": "AbS", "target": "CG"},
+      {"source": "AbS", "target": "T"},
+      {"source": "WF", "target": "T"},
+      {"source": "WS", "target": "WF"},
+      {"source": "WS", "target": "T"},
+      {"source": "WS", "target": "CG"},
+      {"source": "SM", "target": "T"},
+      {"source": "SM", "target": "CG"},
+      {"source": "Ads", "target": "T"},
+      {"source": "Ads", "target": "CG"},
+      {"source": "SV", "target": "T"},
+      {"source": "SV", "target": "CG"},
+      {"source": "SP", "target": "T"},
+      {"source": "SP", "target": "CG"},
+      {"source": "SoC", "target": "T"},
+      {"source": "SoC", "target": "CG"},
+      {"source": "G", "target": "T"},
+      {"source": "G", "target": "CG"},
+      {"source": "WaS", "target": "CG"},
+      {"source": "CG", "target": "Y"},
+      {"source": "CG", "target": "HD"}
+    ]
+  },
+  "independence_tests": [
+    {"test": ["WS", "SM"]},
+    {"test": ["SV", "HD"]},
+    {"test": ["WaS", "CG"]},
+    {"test": ["SP", "WaS"]}
+  ],
+  "conditional_independence_tests": [
+    {"test": ["T", "CG", "SM"]},
+    {"test": ["WS", "WaS", "CG"]},
+    {"test": ["SoC", "SV", "G"]}
+  ]
+}
