@@ -19,15 +19,30 @@ with open('data/smoking.yaml') as file:
 for v in data['variables']:
     print("{name}: {description}".format(**v))
 
-print("---------------")
+print("--------------- \n \n")
 
-print("asking if SMK and LC are independent") 
-out = gpt_ci("SMK", "LC", None, data)
+print("asking if SMK and LC are independent \n\n") 
+out = gpt_ci("SMK", "LC", None, data, n = 10, verbose = True)
+print("\n")
+print(f"voted answer: {out[0]} \n")
+print(f"parsed answers:")
+print(out[1])
+print("\n") 
+print("Model output:")
+for o in out[2]:
+    print(o + "\n\n")
 
-print(out)
 
 
-print("asking if SMK and PN are independent given LC") 
-out2 = gpt_ci("SMK", "PN", ["LC"], data)
+print("--------------- \n \n")
+print("asking if SMK and PN are independent given LC \n \n") 
+out2 = gpt_ci("SMK", "PN", ["LC"], data, n = 10, verbose = True)
 
-print(out2)
+print("\n")
+print(f"voted answer: {out2[0]} \n")
+print(f"parsed answers:")
+print(out2[1])
+print("\n") 
+print("Model output:")
+for o in out2[2]:
+    print(o + "\n\n")
