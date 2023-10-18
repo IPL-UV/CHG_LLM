@@ -29,10 +29,57 @@ graph:
   - from: F
     to: S
   - from: S
-    to: D
-  - from: D
+    to: A
+  - from: A
     to: WS
   - from: F
     to: BB
   - from: WS
     to: BB
+ci-statements:
+  - x: L
+    y: M
+    z: 
+      - F
+    answ: "NO"
+    comment: "collider"
+  - x: L
+    y: M
+    z: null
+    answ: "YES"
+    comment: null
+  - x: S
+    y: WS
+    z: 
+      - A
+    answ: "YES"
+    comment: "mediator"
+  - x: S
+    y: WS
+    z: null
+    answ: "YES"
+    comment: null
+  - x: S
+    y: BB
+    z: 
+      - F
+      - WS
+    answ: "NO"
+    comment: "common parent, mediator"
+  - x: S
+    y: BB
+    z: 
+      - WS
+    answ: "NO"
+    comment: "common parent uncontrolled"
+  - x: L
+    y: SF
+    z: null
+    answ: "YES"
+    comment: "not realistic"
+  - x: L
+    y: SF
+    z: 
+      - F
+    answ: "NO"
+    comment: "collider"

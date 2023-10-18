@@ -20,3 +20,49 @@ graph:
     to: C
   - from: E
     to: R
+ci-statements:
+  - x: B
+    y: E
+    z: 
+      - A
+    answ: "NO"
+    comment: "collider"
+  - x: B
+    y: E
+    z: null
+    answ: "YES"
+    comment: null
+  - x: B
+    y: C
+    z: null
+    answ: "NO"
+    comment: null
+  - x: B
+    y: C
+    z:
+      - A
+    answ: "YES"
+    comment: "mediator"
+  - x: A
+    y: R
+    z: null
+    answ: "NO"
+    comment: "common parent uncontrolled"
+  - x: A
+    y: R
+    z: 
+      - E
+    answ: "YES"
+    comment: "common parent"
+  - x: B
+    y: E
+    z:
+      - R
+    answ: "YES"
+    comment: null
+  - x: A
+    y: R
+    z: 
+      - B
+    answ: "NO"
+    comment: "maybe not realistic"
