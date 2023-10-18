@@ -50,7 +50,7 @@ RSPTMPL0 = ("Provide the answer between brackets as YES/NO"
            "with percentage uncertainty between parenthesis.\n"
            "For example [NO (90%)]")
 
-RSPTMPL1 = ("After expalining your reasoning, "
+RSPTMPL1 = ("After explaining your reasoning, "
             "provide the answer between brackets as YES/NO, "
            "with percentage uncertainty between parenthesis.\n"
            "Where YES stands for \"{ci}\" and NO stands for \"{noci}\".\n" 
