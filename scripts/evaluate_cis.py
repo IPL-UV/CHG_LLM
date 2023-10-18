@@ -108,8 +108,8 @@ async def main():
         y = cis[i]['y']
         z = cis[i]['z']
         print(f"{x} ind {y} given {z} |{y_true[i].center(8)}|{y_pred[i].center(8)}|") 
-    acc_listed = accuracy_score(y_true, y_pred)
-    print(f'accuarcy : {acc_listed}')
+    acc = accuracy_score(y_true, y_pred)
+    print(f'accuracy : {acc}')
 
 
 
