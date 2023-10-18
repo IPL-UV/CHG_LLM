@@ -71,7 +71,7 @@ def voting(x):
     if nNO < nYES:
         out = "YES"
     if nNO == nYES:
-        out = None
+        out = "Uncertain"
     return out, nNO, nYES, len(x)
 
 def parse_response(response):
@@ -182,13 +182,19 @@ instruction: str, default = INST1
  The instruction on the task 
 response_template: str
  The response instuction with template 
-verbose: bool, defautl = False
+verbose: bool, default = False
  If True the used prompt is printed
+tg: async.TaskGroup or None
+ TaskGroup instance passed to be able to reschedule tasks if failed
+tn: str or None
+ The task name for the TaskGroup
+tdelay: double 
+ dealy in seconds before rescheduling the task 
 """
 async def gpt_ci(x, y, z=None, data=None,
            model="gpt-3.5-turbo", temperature=None, n = 1,
            instruction = INST1, response_template = RSPTMPL1,
-           verbose = False):
+           verbose = False, tg = None, tn = None, tdelay = 1):
 
     persona = get_persona(data)
     vdescription = get_var_descritpions(data,x,y,z)
@@ -212,7 +218,13 @@ async def gpt_ci(x, y, z=None, data=None,
                     {"role": "user", "content": vdescription + "\n" + qci}
                     ])
     except Exception as inst:
+        print("error from server (likely)")
         print(inst)
+        if tg is not None:
+            print(f"rescheduling task in {tdelay} seconds ...")
+            await asyncio.sleep(tdelay)
+            tg.create_task(gpt_ci(x,y,z,data,model,temperature,n,
+                instruction,response_template,verbose,tg, tn, tdelay*2), name = tn)
         return None
 
     results = [res['message']['content'] for res in response['choices']] 
@@ -220,6 +232,29 @@ async def gpt_ci(x, y, z=None, data=None,
     voted = voting(parsed)
 
     return voted, parsed, results
+
+async def gpt_cis(cis, data, model = "gpt-3.5-turbo", n = 1, temperature = None, tdelay = 60):
+    async with asyncio.TaskGroup() as tg:
+        tasks = []
+        for i in range(len(cis)):
+            x = cis[i]['x']
+            y = cis[i]['y']
+            z = cis[i]['z']
+            tasks = tasks + [tg.create_task(gpt_ci(x, y, z, data = data, temperature = temperature, 
+                     model = model, n = n, tg = tg, tn = i, tdelay = tdelay), name = i)]
+            await asyncio.sleep(0.01) ## wait 1/100 seconds between requests at least
+
+    print(f"total task executed: {len(tasks)}")
+    results = [None] * len(cis)
+     
+    # extract results in correct order
+    for task in tasks:
+        if task.done() and task.result() is not None:
+            i = int(task.get_name())
+            results[i] = task.result()
+
+    return results
+
 
 ### similar to ci testing but asking causal question....
 ### not well done
