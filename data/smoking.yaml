@@ -13,16 +13,20 @@ ci-statements:
   - x: SMK
     y: LC
     z: null
-    answ: NO
+    answ: "NO"
   - x: LC
     y: FH
     z: null
-    answ: NO
+    answ: "NO"
   - x: LC
     y: SMK
     z: 
       - FH
-    answ: NO
+    answ: "NO"
+  - x: FH
+    y: PN 
+    z: null
+    answ: "YES"
 graph:
   - from: SMK
     to: LC
