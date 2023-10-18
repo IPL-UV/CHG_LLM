@@ -1,3 +1,4 @@
+import asyncio
 import openai 
 import re
 import numpy as np
@@ -157,6 +158,7 @@ def get_causal(x,y,z):
 """CI testing with GPT query
 
 This function query gpt for a (conditional) independence testing statement.
+NOW USING ASYNC
 
 Patameters
 ----------
@@ -183,7 +185,7 @@ response_template: str
 verbose: bool, defautl = False
  If True the used prompt is printed
 """
-def gpt_ci(x, y, z=None, data=None,
+async def gpt_ci(x, y, z=None, data=None,
            model="gpt-3.5-turbo", temperature=None, n = 1,
            instruction = INST1, response_template = RSPTMPL1,
            verbose = False):
@@ -199,7 +201,7 @@ def gpt_ci(x, y, z=None, data=None,
         print(f"system: {response_template.format(ci = ci, noci = noci)}")
         print(f"user: {vdescription}\n{qci}")
     try:
-        response = openai.ChatCompletion.create(
+        response = await openai.ChatCompletion.acreate(
                 model=model,
                 temperature=temperature,
                 n = n,

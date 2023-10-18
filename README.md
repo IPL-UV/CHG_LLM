@@ -10,7 +10,7 @@
 
 ## how to 
 
-- `python -m venv env`
+- `python -m venv env`  (use at least python3.11 to correctly run example.py)
 - `source env/bin/activate` 
 - `pip install -r requirements.txt` 
 - `cp .env.example .env` generate the `.env` file 
