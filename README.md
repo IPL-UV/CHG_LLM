@@ -18,6 +18,7 @@
 - `python example.py`  to run a simple example 
 - For running a specific CI test var1, var2| (var3, var4,...) in the context of a specific YAML_FILE
   `python scripts/ci_test.py data/YAML_FILE var1 var2 [var3] [var4] ...`
+- For running evaluations on a specific data use `python scripts/evaluate_cis.py data/FILE --random R --n N` to run on R randomly sampled ci statements with N repeated answers from the model. 
 
 
 
