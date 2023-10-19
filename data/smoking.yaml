@@ -14,19 +14,42 @@ ci-statements:
     y: LC
     z: null
     answ: "NO"
+    comment: null
   - x: LC
     y: FH
     z: null
     answ: "NO"
+    comment: null
   - x: LC
     y: SMK
     z: 
       - FH
     answ: "NO"
+    comment: null
   - x: FH
     y: PN 
     z: null
+    answ: "NO"
+    comment: null
+  - x: FH
+    y: SMK
+    z: 
+      - LC
+    answ: "NO"
+    comment: "collider"
+  - x: FH
+    y: PN
+    z: 
+      - LC
+    answ: "NO"
+    comment: "mediator and collider"
+  - x: FH
+    y: PN
+    z: 
+      - LC
+      - SMK
     answ: "YES"
+    comment: "causal parents blocked"
 graph:
   - from: SMK
     to: LC

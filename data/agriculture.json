@@ -144,5 +144,38 @@
     {"test": ["T", "CG", "SM"]},
     {"test": ["WS", "WaS", "CG"]},
     {"test": ["SoC", "SV", "G"]}
+  ],
+  "graph": [
+    {"from": "AbS", "to": "SM"},
+    {"from": "AbS", "to": "CG"},
+    {"from": "AbS", "to": "T"},
+    {"from": "WF", "to": "T"},
+    {"from": "WS", "to": "WF"},
+    {"from": "WS", "to": "T"},
+    {"from": "WS", "to": "CG"},
+    {"from": "SM", "to": "T"},
+    {"from": "SM", "to": "CG"},
+    {"from": "Ads", "to": "T"},
+    {"from": "Ads", "to": "CG"},
+    {"from": "SV", "to": "T"},
+    {"from": "SV", "to": "CG"},
+    {"from": "SP", "to": "T"},
+    {"from": "SP", "to": "CG"},
+    {"from": "SoC", "to": "T"},
+    {"from": "SoC", "to": "CG"},
+    {"from": "G", "to": "T"},
+    {"from": "G", "to": "CG"},
+    {"from": "WaS", "to": "CG"},
+    {"from": "CG", "to": "Y"},
+    {"from": "CG", "to": "HD"}
+  ],
+  "ci-statements": [
+    {"x": "WS", "y": "SM", "z": null, "answ": "NO"},
+    {"x": "SV", "y": "HD", "z": null, "answ": "NO"},
+    {"x": "WaS", "y": "CG", "z": null, "answ": "NO"},
+    {"x": "SP", "y": "WaS", "z": null, "answ": "NO"},
+    {"x": "T", "y": "CG", "z": ["SM"], "answ": "NO"},
+    {"x": "WS", "y": "WaS", "z": ["CG"], "answ": "NO"},
+    {"x": "SoC", "y": "SV", "z": ["G"], "answ": "NO"}
   ]
 }
