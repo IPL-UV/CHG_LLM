@@ -47,14 +47,19 @@ def sample_ci(variables, min_cond_set = 0, max_cond_set = None):
     return {"x": var1, "y": var2, "z" : conditioning_set}
 
 
+def sample_valid_cis(variables):
+    return None
+    ## TODO
+
 def sample_cis(data, k = 1, min_cond_set = 0, max_cond_set = None):
     edges = data['graph']
     dag = get_dag(edges)
     cis = k * [None]
+    all_indep = dag.get_independencies()
     for i in range(k):
         variables = get_vars(edges)
         ci = sample_ci(variables, min_cond_set, max_cond_set)
-        if dag.get_independencies().contains(get_assertion(**ci)):
+        if all_indep.contains(get_assertion(**ci)):
             ci['answ'] = "YES"
         else:
             ci['answ'] = "NO" 
@@ -76,6 +81,7 @@ async def main():
     parser.add_argument("--model", type=str, default="gpt-3.5-turbo", help="model to use [%(default)s]")
     parser.add_argument("--n", type=int, default=10, help="number of answer requested from model [%(default)s]")
     parser.add_argument("--temperature", type=float, default=None, help="temperature for the model [%(default)s]")
+    parser.add_argument("--maxcond", type=int, default=None, help="maximum conditioning set [%(default)s]")
 
     args = parser.parse_args()
     data_file = args.data 
@@ -94,7 +100,7 @@ async def main():
             return None
         else:
             print(f"generate {args.random} random ci statements")
-            cis = sample_cis(data, int(args.random))
+            cis = sample_cis(data, int(args.random), max_cond_set = args.maxcond)
 
     results = await gpt_cis(cis, data,
                                      model=args.model,
