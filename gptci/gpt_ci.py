@@ -63,16 +63,33 @@ YES = '\[YES \(\d{1,3}\%\)\]'
 
 
 def voting(x):
-    x = [xx[0] for xx in x]
-    nNO = x.count("NO")
-    nYES = x.count("YES")
+    answs = [xx[0] for xx in x]
+    confs = [xx[1] for xx in x]
+    nNO = answs.count("NO")
+    nYES = answs.count("YES")
+    n = len(x)
     if nNO > nYES:
         out = "NO"
     if nNO < nYES:
         out = "YES"
     if nNO == nYES:
         out = "Uncertain"
-    return out, nNO, nYES, len(x)
+    confmask = [c is None for c in confs] 
+    nomask = [a != "NO" for a in answs]
+    yesmask = [a != "YES" for a in answs]
+    avgconf = np.average(np.ma.array(confs, mask = confmask))
+    avgconfno = np.average(np.ma.array(confs, mask = nomask))
+    avgconfyes = np.average(np.ma.array(confs, mask = yesmask))
+    noconf = nNO / n 
+    yesconf = nYES / n 
+    return {"pred" : out,
+            "n_no" : nNO, "n_yes" : nYES, "n" : n,
+            "no_conf": noconf,
+            "yes_conf": yesconf,
+            "avg_rep_conf" : avgconf,
+            "avg_rep_no_conf": avgconfno, 
+            "avg_rep_yes_conf": avgconfyes} 
+            
 
 def parse_response(response):
 
@@ -83,10 +100,10 @@ def parse_response(response):
 
     if yes is not None:
         answ = "YES"
-        conf = re.search('\(\d{1,3}\%\)', yes[0])[0][1:-2]
+        conf = float(re.search('\(\d{1,3}\%\)', yes[0])[0][1:-2])
     elif no is not None:
         answ = "NO"
-        conf = re.search('\(\d{1,3}\%\)', no[0])[0][1:-2]
+        conf = float(re.search('\(\d{1,3}\%\)', no[0])[0][1:-2])
     else: 
         answ = None
         conf = None
@@ -224,8 +241,8 @@ async def gpt_ci(x, y, z=None, data=None,
             print(f"rescheduling task in {tdelay} seconds ...")
             await asyncio.sleep(tdelay)
             tg.create_task(gpt_ci(x,y,z,data,model,temperature,n,
-                instruction,response_template,verbose,tg, tn, tdelay*2), name = tn)
-        return None
+                instruction,response_template,verbose,tg, tn, tdelay*2), name = tn) 
+        raise inst
 
     results = [res['message']['content'] for res in response['choices']] 
     parsed = [parse_response(res) for res in results] 
@@ -237,6 +254,7 @@ async def gpt_cis(cis, data, model = "gpt-3.5-turbo", n = 1, temperature = None,
     async with asyncio.TaskGroup() as tg:
         tasks = []
         for i in range(len(cis)):
+            print(cis[i])
             x = cis[i]['x']
             y = cis[i]['y']
             z = cis[i]['z']

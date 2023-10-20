@@ -11,6 +11,8 @@ import pgmpy
 sys.path.append('.')
 from gptci import *
 import random
+import numpy as np
+import pandas as pd
 
 from sklearn.metrics import accuracy_score
 
@@ -82,6 +84,7 @@ async def main():
     parser.add_argument("--n", type=int, default=10, help="number of answer requested from model [%(default)s]")
     parser.add_argument("--temperature", type=float, default=None, help="temperature for the model [%(default)s]")
     parser.add_argument("--maxcond", type=int, default=None, help="maximum conditioning set [%(default)s]")
+    parser.add_argument("--out", type=str, default=None, help="if not None, the directory name where to save results [%(default)s]")
 
     args = parser.parse_args()
     data_file = args.data 
@@ -91,33 +94,49 @@ async def main():
     for v in data['variables']:
         print("{name}: {description}".format(**v))
     
+    cis = []
+
     if args.listed:
         print("---------------------------")
         print("listed ci statements in the data file")
-        cis = data['ci-statements'] 
-    elif args.random > 0:
+        listed_cis = data['ci-statements'] 
+        for ci in listed_cis:
+            ci.update({"type":"listed"})
+        cis = cis + listed_cis
+
+    if args.random > 0:
         if data['graph'] is None:
-            return None
+            print("no graph provided, it is not possible to sample cis")
         else:
             print(f"generate {args.random} random ci statements")
-            cis = sample_cis(data, int(args.random), max_cond_set = args.maxcond)
+            sampled_cis = sample_cis(data, int(args.random), max_cond_set = args.maxcond)
+            for ci in sampled_cis:
+                ci.update({"type":"random"})
+            cis = cis + sampled_cis
 
     results = await gpt_cis(cis, data,
                                      model=args.model,
                                      n=args.n,
                                      temperature=args.temperature)
-    y_pred = [res[0][0] for res in results]
-    y_true = [ci['answ'] for ci in cis]
-    print("    ci-statement      |  true  |  pred  |")
+
+    ## append results to cis 
     for i in range(len(cis)):
-        x = cis[i]['x']
-        y = cis[i]['y']
-        z = cis[i]['z']
-        print(f"{x} ind {y} given {z} |{y_true[i].center(8)}|{y_pred[i].center(8)}|") 
-    acc = accuracy_score(y_true, y_pred)
-    print(f'accuracy : {acc}')
+        cis[i].update(results[i][0])
+
+    cisdf = pd.DataFrame(cis)
+
+    acc = accuracy_score(cisdf['answ'], cisdf['pred'])
+    print(f'accuracy : {acc} \n')
+
+    print(cisdf.to_markdown())
 
 
+    if args.out is not None:
+        bn = os.path.basename(data_file).split(".")[0]
+        dr = os.path.join(args.out, bn)
+        os.makedirs(dr, exist_ok=True)
+        fn = os.path.join(dr, "{0}.csv") 
+        cisdf.to_csv(fn.format("predictions"))
 
 if __name__ == "__main__":
     asyncio.run(main())
