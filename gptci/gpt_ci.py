@@ -276,6 +276,67 @@ async def gpt_ci(x, y, z=None, data=None,
         else:
             return None
 
+def gpt_ci_sync(x, y, z=None, data=None,
+           model="gpt-3.5-turbo", temperature=None, n = 1,
+           instruction = INST1, response_template = RSPTMPL1,
+           verbose = False, tryagain = False, tdelay = 1, dryrun = False):
+
+    # if x,y are list and length 1 reduce them
+    if type(x) is list:
+        if len(x) == 1:
+            x = x[0]
+    if type(y) is list:
+        if len(y) == 1:
+            y = y[0]
+    persona = get_persona(data)
+    vdescription = get_var_descritpions(data,x,y,z)
+    qci = get_qci(x,y,z)
+    ci = get_ci(x,y,z)
+    noci = get_noci(x,y,z)
+    if verbose:
+        print(f"system: {persona}")
+        print(f"system: {instruction}")
+        print(f"system: {response_template.format(ci = ci, noci = noci)}")
+        print(f"user: {vdescription}\n{qci}")
+    try:
+        if dryrun:
+            if random() > 0.5:
+                response = {"choices": [{"message": {"content":"[YES (0%)]"}}] * n }
+                results = [res['message']['content'] for res in response['choices']] 
+                parsed = [parse_response(res) for res in results] 
+                voted = voting(parsed)
+                return voted, parsed, results
+            else: 
+                raise Exception("test exception")
+        else:
+            response = openai.ChatCompletion.create(
+                    model=model,
+                    temperature=temperature,
+                    n = n,
+                    messages=[
+                        {"role": "system", "content": persona},
+                        {"role": "system", "content": instruction},
+                        {"role": "system", "content": response_template.format(ci=ci, noci=noci)},
+                        {"role": "user", "content": vdescription + "\n" + qci}
+                        ])
+
+            results = [res['message']['content'] for res in response['choices']] 
+            parsed = [parse_response(res) for res in results] 
+            voted = voting(parsed)
+            return voted, parsed, results
+
+    except Exception as inst:
+        print("error from server (likely)")
+        print(inst)
+        if tryagain:
+            print(f"rescheduling task in {tdelay} seconds ...")
+            sleep(tdelay)
+            res = gpt_cii_sync(x,y,z,data,model,temperature,n,
+                instruction,response_template,verbose,tryagain, tdelay*2, dryrun = dryrun)
+            return res
+        else:
+            return None
+
 
 ## async reqests for multiple cis
 async def gpt_cis(cis, data, model = "gpt-3.5-turbo", n = 1, temperature = None, tdelay = 60, dryrun = False):

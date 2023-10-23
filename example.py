@@ -24,7 +24,7 @@ async def main():
     print("--------------- \n \n")
     
     print("asking if SMK and LC are independent \n\n") 
-    out = await gpt_ci("SMK", "LC", None, data, n = 10, verbose = True)
+    out = gpt_ci_sync("SMK", "LC", None, data, n = 10, tryagain = True, verbose = True)
     print("\n")
     print(f"voted answer: {out[0]} \n")
     print(f"parsed answers:")
