@@ -3,7 +3,7 @@ import openai
 import re
 import numpy as np
 from random import random
-
+from pybnesian import IndependenceTest
 
 PRS0 = "You are a helpful expert willing to answer questions."
 PRS1 = "You are a helpful expert in {field} willing to answer questions."
@@ -463,3 +463,41 @@ def gpt_ci_list(cis, data=None, temperature=None, model="gpt-3.5-turbo-instruct"
         results[choice.index] = choice.text 
     
     return [(parse_response(res), res) for res in results]
+
+class GPTIndependenceTest(IndependenceTest):
+    def __init__(self, data, model, n, temperature, verbose = False):
+        # IMPORTANT: Always call the parent class to initialize the C++ object.
+        IndependenceTest.__init__(self)
+        self.data = data
+        self.model = model
+        self.n = n
+        self.temperature = temperature
+        self.verbose = verbose
+        
+        # extract variable names from data dictionary
+        self.variables = [var['name'] for var in self.data['variables']]
+
+    def num_variables(self):
+        return len(self.variables)
+
+    def variable_names(self):
+        return self.variables
+
+    def has_variables(self, vars):
+        return set(vars).issubset(set(self.variables))
+
+    def name(self, index):
+        return self.variables[index]
+
+    def pvalue(self, x, y, z):
+        if isinstance(z, str):
+            z = [z]
+        results = gpt_ci_sync(x, y, z, self.data,
+                                model=self.model,
+                                n=self.n,
+                                temperature=self.temperature,
+                                verbose=self.verbose)
+        if results[0]['pred'] == 'NO':
+            return 0
+        else:
+            return 1
