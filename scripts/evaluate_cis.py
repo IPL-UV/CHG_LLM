@@ -24,9 +24,17 @@ def get_dag(edges):
     dag = DAG([(e['from'], e['to']) for e in edges])
     return dag
  
-def get_cis(edges):
+def get_cis(edges, translate=False):
     dag = get_dag(edges)
-    return dag.get_independencies() 
+    cis = dag.get_independencies()
+    if translate:
+        cis = cis.get_assertions()
+        cis = [{"x": list(ci.event1),
+                "y": list(ci.event2),
+                "z": list(ci.event3),
+                "answ": "YES",
+                "type": "valid"} for ci in cis]
+    return cis 
 
 def get_assertion(x, y, z, *args):
     return pgmpy.independencies.IndependenceAssertion(x, y, z)
@@ -80,11 +88,13 @@ async def main():
     parser.add_argument("data", type=str, help="Path to the YAML data file")
     parser.add_argument("--listed", action="store_true", help="evaluate listed cis")
     parser.add_argument("--random", type=int, default=0, help="number of random cis from true graph [%(default)s]")
+    parser.add_argument("--valid", type=int, default=0, help="number of valid cis from true graph [%(default)s]")
     parser.add_argument("--model", type=str, default="gpt-3.5-turbo", help="model to use [%(default)s]")
     parser.add_argument("--n", type=int, default=10, help="number of answer requested from model [%(default)s]")
     parser.add_argument("--temperature", type=float, default=None, help="temperature for the model [%(default)s]")
     parser.add_argument("--maxcond", type=int, default=None, help="maximum conditioning set [%(default)s]")
     parser.add_argument("--out", type=str, default=None, help="if not None, the directory name where to save results [%(default)s]")
+    parser.add_argument("--dryrun", action="store_true", default = False, help="this option will not actually call the api")
 
     args = parser.parse_args()
     data_file = args.data 
@@ -104,6 +114,15 @@ async def main():
             ci.update({"type":"listed"})
         cis = cis + listed_cis
 
+    if args.valid > 0:
+        if data['graph'] is None:
+            print('no graph provided')
+        else:
+            valid_cis = get_cis(data['graph'], translate = True) 
+            print(valid_cis)
+            cis = cis + valid_cis[:args.valid]
+        
+
     if args.random > 0:
         if data['graph'] is None:
             print("no graph provided, it is not possible to sample cis")
@@ -114,15 +133,18 @@ async def main():
                 ci.update({"type":"random"})
             cis = cis + sampled_cis
 
-    results = await gpt_cis(cis, data,
-                                     model=args.model,
-                                     n=args.n,
-                                     temperature=args.temperature)
+    print(cis)
 
+    results = await gpt_cis(cis, data,
+            model=args.model,
+            n=args.n,
+            temperature=args.temperature, tdelay = 1, dryrun = args.dryrun)
+    
     ## append results to cis 
     for i in range(len(cis)):
         cis[i].update(results[i][0])
 
+    ######### prepare final results
     cisdf = pd.DataFrame(cis)
 
     acc = accuracy_score(cisdf['answ'], cisdf['pred'])

@@ -2,6 +2,8 @@ import asyncio
 import openai 
 import re
 import numpy as np
+from random import random
+
 
 PRS0 = "You are a helpful expert willing to answer questions."
 PRS1 = "You are a helpful expert in {field} willing to answer questions."
@@ -132,8 +134,13 @@ def get_var_descritpions(data=None, x=None,y=None,z=None):
     if data is None:
         return "Consider the following variables: {x}, {y} and {z}."
     vs = [v['name'] for v in data['variables']]
+
     if x is not None and y is not None:
-        vs = [x,y]
+        if type(x) is not list:
+            x = [x]
+        if type(y) is not list:
+            y = [y]
+        vs = x + y
     if z is not None:
         vs = vs + z
     out = ("{context}\n"
@@ -201,18 +208,25 @@ response_template: str
  The response instuction with template 
 verbose: bool, default = False
  If True the used prompt is printed
-tg: async.TaskGroup or None
- TaskGroup instance passed to be able to reschedule tasks if failed
-tn: str or None
- The task name for the TaskGroup
+tryagain: bool, default = False,
+ if True, try the api call again after exponential delay 
 tdelay: double 
  dealy in seconds before rescheduling the task 
+dryrun: bool, default = False
+ if True a test-run will be performed, without actual calls to the api 
 """
 async def gpt_ci(x, y, z=None, data=None,
            model="gpt-3.5-turbo", temperature=None, n = 1,
            instruction = INST1, response_template = RSPTMPL1,
-           verbose = False, tg = None, tn = None, tdelay = 1):
+           verbose = False, tryagain = False, tdelay = 1, dryrun = False):
 
+    # if x,y are list and length 1 reduce them
+    if type(x) is list:
+        if len(x) == 1:
+            x = x[0]
+    if type(y) is list:
+        if len(y) == 1:
+            y = y[0]
     persona = get_persona(data)
     vdescription = get_var_descritpions(data,x,y,z)
     qci = get_qci(x,y,z)
@@ -224,42 +238,55 @@ async def gpt_ci(x, y, z=None, data=None,
         print(f"system: {response_template.format(ci = ci, noci = noci)}")
         print(f"user: {vdescription}\n{qci}")
     try:
-        response = await openai.ChatCompletion.acreate(
-                model=model,
-                temperature=temperature,
-                n = n,
-                messages=[
-                    {"role": "system", "content": persona},
-                    {"role": "system", "content": instruction},
-                    {"role": "system", "content": response_template.format(ci=ci, noci=noci)},
-                    {"role": "user", "content": vdescription + "\n" + qci}
-                    ])
+        if dryrun:
+            if random() > 0.5:
+                response = {"choices": [{"message": {"content":"[YES (0%)]"}}] * n }
+                results = [res['message']['content'] for res in response['choices']] 
+                parsed = [parse_response(res) for res in results] 
+                voted = voting(parsed)
+                return voted, parsed, results
+            else: 
+                raise Exception("test exception")
+        else:
+            response = await openai.ChatCompletion.acreate(
+                    model=model,
+                    temperature=temperature,
+                    n = n,
+                    messages=[
+                        {"role": "system", "content": persona},
+                        {"role": "system", "content": instruction},
+                        {"role": "system", "content": response_template.format(ci=ci, noci=noci)},
+                        {"role": "user", "content": vdescription + "\n" + qci}
+                        ])
+
+            results = [res['message']['content'] for res in response['choices']] 
+            parsed = [parse_response(res) for res in results] 
+            voted = voting(parsed)
+            return voted, parsed, results
+
     except Exception as inst:
         print("error from server (likely)")
         print(inst)
-        if tg is not None:
+        if tryagain:
             print(f"rescheduling task in {tdelay} seconds ...")
             await asyncio.sleep(tdelay)
-            tg.create_task(gpt_ci(x,y,z,data,model,temperature,n,
-                instruction,response_template,verbose,tg, tn, tdelay*2), name = tn) 
-        raise inst
+            res = await gpt_ci(x,y,z,data,model,temperature,n,
+                instruction,response_template,verbose,tryagain, tdelay*2, dryrun = dryrun)
+            return res
+        else:
+            return None
 
-    results = [res['message']['content'] for res in response['choices']] 
-    parsed = [parse_response(res) for res in results] 
-    voted = voting(parsed)
 
-    return voted, parsed, results
-
-async def gpt_cis(cis, data, model = "gpt-3.5-turbo", n = 1, temperature = None, tdelay = 60):
+## async reqests for multiple cis
+async def gpt_cis(cis, data, model = "gpt-3.5-turbo", n = 1, temperature = None, tdelay = 60, dryrun = False):
     async with asyncio.TaskGroup() as tg:
         tasks = []
         for i in range(len(cis)):
-            print(cis[i])
             x = cis[i]['x']
             y = cis[i]['y']
             z = cis[i]['z']
             tasks = tasks + [tg.create_task(gpt_ci(x, y, z, data = data, temperature = temperature, 
-                     model = model, n = n, tg = tg, tn = i, tdelay = tdelay), name = i)]
+                     model = model, n = n, tryagain = True, tdelay = tdelay, dryrun = dryrun), name = i)]
             await asyncio.sleep(0.01) ## wait 1/100 seconds between requests at least
 
     print(f"total task executed: {len(tasks)}")
@@ -269,6 +296,8 @@ async def gpt_cis(cis, data, model = "gpt-3.5-turbo", n = 1, temperature = None,
     for task in tasks:
         if task.done() and task.result() is not None:
             i = int(task.get_name())
+            #print(f"task {i} results")
+            #print(task.result())
             results[i] = task.result()
 
     return results
