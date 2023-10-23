@@ -124,7 +124,7 @@ async def main():
             print('no graph provided')
         else:
             valid_cis = get_cis(data['graph'], translate = True) 
-            cis = cis + random.choices(valid_cis, k = args.valid)
+            cis = cis + random.sample(valid_cis, k = min(args.valid, len(valid_cis)))
         
 
     if args.random > 0:
