@@ -28,12 +28,17 @@ def get_cis(edges, translate=False):
     dag = get_dag(edges)
     cis = dag.get_independencies()
     if translate:
-        cis = cis.get_assertions()
-        cis = [{"x": list(ci.event1),
-                "y": list(ci.event2),
-                "z": list(ci.event3),
-                "answ": "YES",
-                "type": "valid"} for ci in cis]
+        cis2 = cis.get_assertions()
+        cis = []
+        for ci in cis2:
+            xs = list(ci.event1)
+            ys = list(ci.event2)
+            for x, y in zip(xs, ys):
+                cis = cis + [{"x": x,
+                    "y": y,
+                    "z": list(ci.event3),
+                    "answ": "YES",
+                    "type": "valid"}]
     return cis 
 
 def get_assertion(x, y, z, *args):
@@ -119,8 +124,7 @@ async def main():
             print('no graph provided')
         else:
             valid_cis = get_cis(data['graph'], translate = True) 
-            print(valid_cis)
-            cis = cis + valid_cis[:args.valid]
+            cis = cis + random.choices(valid_cis, k = args.valid)
         
 
     if args.random > 0:
@@ -135,10 +139,14 @@ async def main():
 
     print(cis)
 
+    if args.dryrun:
+        tdelay = 0
+    else:
+        tdelay = 10
     results = await gpt_cis(cis, data,
             model=args.model,
             n=args.n,
-            temperature=args.temperature, tdelay = 1, dryrun = args.dryrun)
+            temperature=args.temperature, tdelay = tdelay, dryrun = args.dryrun)
     
     ## append results to cis 
     for i in range(len(cis)):
