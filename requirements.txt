@@ -4,3 +4,5 @@ PyYAML
 pgmpy
 scikit-learn
 pandas
+tabulate
+plotnine
