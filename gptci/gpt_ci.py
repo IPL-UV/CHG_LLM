@@ -4,6 +4,7 @@ import re
 import numpy as np
 from random import random
 from pybnesian import IndependenceTest
+from time import sleep
 
 PRS0 = "You are a helpful expert willing to answer questions."
 PRS1 = "You are a helpful expert in {field} willing to answer questions."
@@ -240,7 +241,7 @@ async def gpt_ci(x, y, z=None, data=None,
     try:
         if dryrun:
             if random() > 0.5:
-                response = {"choices": [{"message": {"content":"[YES (0%)]"}}] * n }
+                response = {"choices": [{"message": {"content":"[NO (0%)]"}}] * n }
                 results = [res['message']['content'] for res in response['choices']] 
                 parsed = [parse_response(res) for res in results] 
                 voted = voting(parsed)
@@ -300,8 +301,8 @@ def gpt_ci_sync(x, y, z=None, data=None,
         print(f"user: {vdescription}\n{qci}")
     try:
         if dryrun:
-            if random() > 0.5:
-                response = {"choices": [{"message": {"content":"[YES (0%)]"}}] * n }
+            if random() > -1:
+                response = {"choices": [{"message": {"content":"[NO (0%)]"}}] * n }
                 results = [res['message']['content'] for res in response['choices']] 
                 parsed = [parse_response(res) for res in results] 
                 voted = voting(parsed)
@@ -331,7 +332,7 @@ def gpt_ci_sync(x, y, z=None, data=None,
         if tryagain:
             print(f"rescheduling task in {tdelay} seconds ...")
             sleep(tdelay)
-            res = gpt_cii_sync(x,y,z,data,model,temperature,n,
+            res = gpt_ci_sync(x,y,z,data,model,temperature,n,
                 instruction,response_template,verbose,tryagain, tdelay*2, dryrun = dryrun)
             return res
         else:
@@ -496,8 +497,10 @@ class GPTIndependenceTest(IndependenceTest):
                                 model=self.model,
                                 n=self.n,
                                 temperature=self.temperature,
-                                verbose=self.verbose)
+                                verbose=self.verbose,
+                                tryagain=True,
+                                dryrun= False)
         if results[0]['pred'] == 'NO':
-            return 1
-        else:
             return 0
+        else:
+            return 1

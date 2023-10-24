@@ -45,21 +45,21 @@ def main():
         print("{name}: {description}".format(**v))
     
     
-    gptcit = GPTIndependenceTest(data, args.model, args.n, args.temperature, verbose=True)
+    gptcit = GPTIndependenceTest(data, args.model, args.n, args.temperature, verbose=False)
     pc = PC()
-    graph = pc.estimate(gptcit, verbose=verbose_PC)
+    graph = pc.estimate(gptcit, verbose=True)
+    print(graph)
+    print(graph.nodes()) 
     
-    
-    print(set(graph.arcs()))
-    dag = DAG(list(graph.arcs()))
-    dag_vis = dag.to_daft()
+    print(f"arcs: {graph.arcs()}")
+    print(f"edges : {graph.edges()}")
 
     if args.out is not None:
         # Add GT for comparison
         os.makedirs(args.out, exist_ok=True)
         arcs = [(data['graph'][i]['from'], data['graph'][i]['to']) for i in range(len(data['graph']))]
         dag_GT = DAG(arcs)
-        print(arcs)
+        #print(arcs)
         dag_GT_vis = dag_GT.to_daft()
         dag_GT_vis.savefig(args.out + '/graph_GT.png')
         with open(args.out + '/graph_GT.txt', 'w') as f:
@@ -67,7 +67,7 @@ def main():
 
         with open(args.out + '/graph.txt', 'w') as f:
             f.write(str(set(graph.arcs())))
-        dag_vis.savefig(args.out + '/graph.png')
+        #dag_vis.savefig(args.out + '/graph.png')
 
 
 if __name__ == "__main__":
