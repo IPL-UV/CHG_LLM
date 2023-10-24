@@ -341,15 +341,17 @@ def gpt_ci_sync(x, y, z=None, data=None,
 
 ## async reqests for multiple cis
 async def gpt_cis(cis, data, model = "gpt-3.5-turbo", n = 1, temperature = None, tdelay = 60, dryrun = False):
-    async with asyncio.TaskGroup() as tg:
-        tasks = []
-        for i in range(len(cis)):
-            x = cis[i]['x']
-            y = cis[i]['y']
-            z = cis[i]['z']
-            tasks = tasks + [tg.create_task(gpt_ci(x, y, z, data = data, temperature = temperature, 
-                     model = model, n = n, tryagain = True, tdelay = tdelay, dryrun = dryrun), name = i)]
-            await asyncio.sleep(0.01) ## wait 1/100 seconds between requests at least
+
+    tasks = set()
+    for i in range(len(cis)):
+        x = cis[i]['x']
+        y = cis[i]['y']
+        z = cis[i]['z']
+        task = asyncio.create_task(gpt_ci(x, y, z, data = data, temperature = temperature, 
+                 model = model, n = n, tryagain = True, tdelay = tdelay, dryrun = dryrun, verbose = True), name = i) 
+        tasks.add(task)
+        await asyncio.sleep(0.01) ## wait 1/100 seconds between requests at least
+    await asyncio.gather(*tasks)
 
     print(f"total task executed: {len(tasks)}")
     results = [None] * len(cis)

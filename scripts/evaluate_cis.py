@@ -155,6 +155,9 @@ async def main():
     ######### prepare final results
     cisdf = pd.DataFrame(cis)
 
+    ## store name of data
+    cisdf["data"] = os.path.basename(data_file).split(".")[0] 
+
     acc = accuracy_score(cisdf['answ'], cisdf['pred'])
     print(f'accuracy : {acc} \n')
 
