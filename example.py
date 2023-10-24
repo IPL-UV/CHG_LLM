@@ -49,7 +49,7 @@ async def main():
 
 
     print("trying concurrent task async")
-    resa = gpt_cis(data['ci-statements'], data, n = 2)
+    resa = await gpt_cis(data['ci-statements'], data, n = 2)
     print(resa)
 
 
