@@ -498,6 +498,6 @@ class GPTIndependenceTest(IndependenceTest):
                                 temperature=self.temperature,
                                 verbose=self.verbose)
         if results[0]['pred'] == 'NO':
-            return 0
-        else:
             return 1
+        else:
+            return 0
