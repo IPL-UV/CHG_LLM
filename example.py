@@ -49,13 +49,9 @@ async def main():
 
 
     print("trying concurrent task async")
-    print("asking if FH indep of LC;  FH indep of SMK and FH indep of PN")
-    async with asyncio.TaskGroup() as tg:
-        task1 = tg.create_task(gpt_ci("FH", "LC", None, data, n = 20))
-        task2 = tg.create_task(gpt_ci("FH", "SMK", None, data, n = 20))
-        task3 = tg.create_task(gpt_ci("FH", "PN", None, data, n = 20))
+    resa = gpt_cis(data['ci-statements'], data, n = 2)
+    print(resa)
 
-    print(f"3 tasks have completed now:\n FH indep of LC? {task1.result()[0]} \n FH indep of SMK? {task2.result()[0]} \n FH indep of PN? {task3.result()[0]}")
 
 
 asyncio.run(main())
