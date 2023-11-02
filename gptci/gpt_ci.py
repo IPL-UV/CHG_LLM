@@ -11,15 +11,15 @@ PRS1 = "You are a helpful expert in {field} willing to answer questions."
 
 INST0 = ("When asked to provide estimates and "
         "confidence using prior knowledge "
-         "you will answer with your best guess based "
-         "on the knowledge you have access to.")
+        "you will answer with your best guess based "
+        "on the knowledge you have access to.")
 
 INST1 = ("You will be asked to provide your estimate and confidence "
         "on statistical independence between two variables "
         "(eventually conditioned on a set of variables).\n"
         "Your answer should not be based on data or observations, "
         "but only on the available knowledge.\n"
-        "Even when unsure or uncertain provide a valid answer and uncertainty.\n"
+        "Even when unsure or uncertain, provide a valid answer and uncertainty.\n"
         "Answer only in the required format.\n")
 
 INSTCAUSAL = ("You will be asked to provide your estimate and confidence "
@@ -27,7 +27,7 @@ INSTCAUSAL = ("You will be asked to provide your estimate and confidence "
         "(eventually conditioned on a set of variables)."
         "Your answer should not be based on data or observations "
         "but only on the available knowledge.\n"
-        "Even when unsure or uncertain provide a valid answer and uncertainty."
+        "Even when unsure or uncertain, provide a valid answer and uncertainty."
         "Answer only in the required format. ")
 
 INST2 = ("You will be asked to provide your estimate and confidence "
@@ -35,6 +35,17 @@ INST2 = ("You will be asked to provide your estimate and confidence "
         "(eventually conditioned on a set of variables).\n"
         "First argue and dicuss the reasoning behind the answer, "
         "and finally provide the requested answer in the required format")
+
+INST3 = ("You will be asked to provide your best guess and your uncertainty "
+        "on the statistical independence between two variables "
+        "potentially conditioned on a set of variables.\n"
+        "Your answer should not be based on data or observations, "
+        "but only on the available knowledge.\n"
+        "Even when unsure or uncertain, provide your best guess (YES or NO) "
+        "and the probability that your guess is correct.\n"
+        "Answer only in the required format.\n")
+
+
 
 QINDEP = "is {x} independent of {y} ?"
 QCINDEP = "is {x} independent of {y} given {z} ?"
@@ -51,14 +62,22 @@ CAUSAL = "are {x} and {y} causally linked ?"
 CCAUSAL = "are {x} and {y} causally linked if controlling for {z} ?"
 
 RSPTMPL0 = ("Provide the answer between brackets as YES/NO"
-           "with percentage uncertainty between parenthesis.\n"
-           "For example [NO (90%)]")
+            "with percentage uncertainty between parenthesis.\n"
+            "For example [NO (90%)]")
 
 RSPTMPL1 = ("After explaining your reasoning, "
             "provide the answer between brackets as YES/NO, "
-           "with percentage uncertainty between parenthesis.\n"
-           "Where YES stands for \"{ci}\" and NO stands for \"{noci}\".\n" 
-           "For example [NO (50%)] or [YES (50%)].")
+            "with percentage uncertainty between parenthesis.\n"
+            "Where YES stands for \"{ci}\" and NO stands for \"{noci}\".\n" 
+            "For example [NO (50%)] or [YES (50%)].")
+
+RSPTMPL2 = ("Work out the answer in a step-by-step way to be as "
+            "sure as possible that you have the right answer."
+            "The answer must be provided in the following form: "
+            "[<ANSWER> (<PROBABILITY>)] where ANSWER is either YES or NO "
+            "and PROBABILITY is a percentage between 0% and 100%."
+            "YES stands for \"{ci}\" and NO stands for \"{noci}\".\n"
+            "For example [NO (50%)] or [YES (50%)].")
 
 #NO = '\[NO \(\d{1,3}\%\)\]'
 NO = '\[\s*NO.*\]'
