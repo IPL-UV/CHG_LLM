@@ -56,6 +56,9 @@ CINDEP = "{x} is independent of {y} given {z}"
 DEP = "{x} is not independent of {y}"
 CDEP = "{x} is not independent of {y} given {z}"
 
+DEP3 = "{x} and {y} are dependent"
+CDEP3 = "{x} and {y} are dependent given {z}"
+
 
 
 CAUSAL = "are {x} and {y} causally linked ?"
