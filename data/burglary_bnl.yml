@@ -23,4 +23,3 @@ graph:
     to: johncalls
   - from: alarm
     to: marycalls
-~                   
