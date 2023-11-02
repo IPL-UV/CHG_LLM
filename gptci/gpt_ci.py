@@ -60,9 +60,11 @@ RSPTMPL1 = ("After explaining your reasoning, "
            "Where YES stands for \"{ci}\" and NO stands for \"{noci}\".\n" 
            "For example [NO (50%)] or [YES (50%)].")
 
-# TODO allow spaces between brackets e.g. [ NO (90%) ]
-NO = '\[NO \(\d{1,3}\%\)\]'
-YES = '\[YES \(\d{1,3}\%\)\]'
+#NO = '\[NO \(\d{1,3}\%\)\]'
+NO = '\[\s*NO.*\]'
+#YES = '\[YES \(\d{1,3}\%\)\]'
+YES = '\[\s*YES.*\]'
+
 
 
 def voting(x):
@@ -301,7 +303,7 @@ def gpt_ci_sync(x, y, z=None, data=None,
         print(f"user: {vdescription}\n{qci}")
     try:
         if dryrun:
-            if random() > -1:
+            if random() > 0.5:
                 response = {"choices": [{"message": {"content":"[NO (0%)]"}}] * n }
                 results = [res['message']['content'] for res in response['choices']] 
                 parsed = [parse_response(res) for res in results] 
@@ -340,15 +342,25 @@ def gpt_ci_sync(x, y, z=None, data=None,
 
 
 ## async reqests for multiple cis
-async def gpt_cis(cis, data, model = "gpt-3.5-turbo", n = 1, temperature = None, tdelay = 60, dryrun = False):
+async def gpt_cis(cis, data,
+                  model = "gpt-3.5-turbo", n = 1, temperature = None, 
+                  instruction = INST1, response_template = RSPTMPL1,
+                  tdelay = 60, dryrun = False, verbose = False):
 
     tasks = set()
     for i in range(len(cis)):
         x = cis[i]['x']
         y = cis[i]['y']
         z = cis[i]['z']
-        task = asyncio.create_task(gpt_ci(x, y, z, data = data, temperature = temperature, 
-                 model = model, n = n, tryagain = True, tdelay = tdelay, dryrun = dryrun, verbose = True), name = i) 
+        task = asyncio.create_task(gpt_ci(x, y, z, data = data,
+                                          model = model, 
+                                          temperature = temperature, 
+                                          n = n,
+                                          instruction = instruction,
+                                          response_template = response_template,
+                                          tryagain = True, tdelay = tdelay,
+                                          dryrun = dryrun, verbose = verbose),
+                                   name = i) 
         tasks.add(task)
         await asyncio.sleep(0.01) ## wait 1/100 seconds between requests at least
     await asyncio.gather(*tasks)
@@ -360,8 +372,6 @@ async def gpt_cis(cis, data, model = "gpt-3.5-turbo", n = 1, temperature = None,
     for task in tasks:
         if task.done() and task.result() is not None:
             i = int(task.get_name())
-            #print(f"task {i} results")
-            #print(task.result())
             results[i] = task.result()
 
     return results
