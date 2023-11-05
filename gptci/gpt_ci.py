@@ -543,7 +543,7 @@ class GPTIndependenceTest(IndependenceTest):
             if len(row) > 1:
                 print(f"Warning: more than one row found in pre-stored file for statement {x} indep {y} given {z}. Average output reponse.")
                 # TODO: Discuss what to prefer in case of 0.5
-                if sum(row['pred'] == 'NO') / len(row) >= 0.5:
+                if row['n_no'].sum() >= row['n_yes'].sum():
                     # NO wins voting, not independent, significant evidence against conditional independence
                     return 0
                 else:
@@ -563,6 +563,8 @@ class GPTIndependenceTest(IndependenceTest):
                                 n=self.n,
                                 temperature=self.temperature,
                                 verbose=self.verbose,
+                                instruction = INST3, 
+                                response_template = RSPTMPL2,
                                 tryagain=True,
                                 dryrun= False)
         if results[0]['pred'] == 'NO':
