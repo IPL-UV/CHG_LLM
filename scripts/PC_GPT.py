@@ -15,6 +15,7 @@ sys.path.append('../.')
 from gptci import *
 import numpy as np
 import pandas as pd
+import ast
 
 import matplotlib.pyplot as plt
 
@@ -34,6 +35,9 @@ def main():
     parser.add_argument("--n", type=int, default=10, help="number of answer requested from model [%(default)s]")
     parser.add_argument("--temperature", type=float, default=None, help="temperature for the model [%(default)s]")
     parser.add_argument("--out", type=str, default=None, help="if not None, the directory name where to save results [%(default)s]")
+    # add argument that is either a file name or None
+    parser.add_argument("--pre_stored_file", type=str, default=None, help="if not None, the file name where to load pre-stored results [%(default)s]")
+    
 
     verbose_PC = True
     args = parser.parse_args()
@@ -43,9 +47,16 @@ def main():
 
     for v in data['variables']:
         print("{name}: {description}".format(**v))
+
+    # Load answers from previous GPT runs
+    if args.pre_stored_file:
+        pre_stored_file = pd.read_csv(f'{args.pre_stored_file}')
+        pre_stored_file['z'].fillna('[]', inplace=True)
+        pre_stored_file['z'] = pre_stored_file['z'].apply(lambda x: ast.literal_eval(x))
+    else:
+        pre_stored_file = None
     
-    
-    gptcit = GPTIndependenceTest(data, args.model, args.n, args.temperature, verbose=False)
+    gptcit = GPTIndependenceTest(data, args.model, args.n, args.temperature, verbose=False, pre_stored_file=pre_stored_file)
     pc = PC()
     graph = pc.estimate(gptcit, verbose=True)
     print(graph)

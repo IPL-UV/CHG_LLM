@@ -5,6 +5,7 @@ import numpy as np
 from random import random
 from pybnesian import IndependenceTest
 from time import sleep
+import pandas as pd
 
 PRS0 = "You are a helpful expert willing to answer questions."
 PRS1 = "You are a helpful expert in {field} willing to answer questions."
@@ -500,7 +501,7 @@ def gpt_ci_list(cis, data=None, temperature=None, model="gpt-3.5-turbo-instruct"
     return [(parse_response(res), res) for res in results]
 
 class GPTIndependenceTest(IndependenceTest):
-    def __init__(self, data, model, n, temperature, verbose = False):
+    def __init__(self, data, model, n, temperature, verbose = False, pre_stored_file=None):
         # IMPORTANT: Always call the parent class to initialize the C++ object.
         IndependenceTest.__init__(self)
         self.data = data
@@ -508,10 +509,10 @@ class GPTIndependenceTest(IndependenceTest):
         self.n = n
         self.temperature = temperature
         self.verbose = verbose
-        
         # extract variable names from data dictionary
         self.variables = [var['name'] for var in self.data['variables']]
-
+        self.pre_stored_file = pre_stored_file
+            
     def num_variables(self):
         return len(self.variables)
 
@@ -525,8 +526,38 @@ class GPTIndependenceTest(IndependenceTest):
         return self.variables[index]
 
     def pvalue(self, x, y, z):
+        # Make sure that z is a list
         if isinstance(z, str):
             z = [z]
+        if z is None:
+            z = []
+        
+        # check if self.pre_stored_file is not None
+        if not self.pre_stored_file is None:            
+            # TODO: Should we average over both options X,Y and Y,X?
+            rowXY = self.pre_stored_file.loc[(self.pre_stored_file['x'] == x) & (self.pre_stored_file['y'] == y) & (np.array([set(Z) for Z in self.pre_stored_file['z']]) ==set(z))]
+            rowYX = self.pre_stored_file.loc[(self.pre_stored_file['y'] == x) & (self.pre_stored_file['x'] == y) & (np.array([set(Z) for Z in self.pre_stored_file['z']]) ==set(z))]
+            # union of both dataframes
+            row = pd.concat([rowXY, rowYX])
+
+            if len(row) > 1:
+                print(f"Warning: more than one row found in pre-stored file for statement {x} indep {y} given {z}. Average output reponse.")
+                # TODO: Discuss what to prefer in case of 0.5
+                if sum(row['pred'] == 'NO') / len(row) >= 0.5:
+                    # NO wins voting, not independent, significant evidence against conditional independence
+                    return 0
+                else:
+                    # YES wins voting, independent, or rather no significant evidence against conditional independence
+                    return 1
+
+            if len(row) == 1:
+                if (row['pred'].values)[0] == 'NO':
+                    return 0
+                else:
+                    return 1
+            print(f"Warning: No row found in pre-stored file for statement {x} indep {y} given {z}. Ask Chat GPT.")
+
+        # If there are no pre-stored results, ask Chat GPT.
         results = gpt_ci_sync(x, y, z, self.data,
                                 model=self.model,
                                 n=self.n,
