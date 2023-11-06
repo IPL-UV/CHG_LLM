@@ -6,3 +6,4 @@ scikit-learn
 pandas
 tabulate
 plotnine
+tqdm

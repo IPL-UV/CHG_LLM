@@ -6,6 +6,7 @@ from random import random
 from pybnesian import IndependenceTest
 from time import sleep
 import pandas as pd
+from tqdm.asyncio import tqdm_asyncio
 
 PRS0 = "You are a helpful expert willing to answer questions."
 PRS1 = "You are a helpful expert in {field} willing to answer questions."
@@ -77,7 +78,8 @@ RSPTMPL1 = ("After explaining your reasoning, "
 
 RSPTMPL2 = ("Work out the answer in a step-by-step way to be as "
             "sure as possible that you have the right answer."
-            "The answer must be provided in the following form: "
+            "After explaining your reasoning, "
+            "provide the answer in the following form: "
             "[<ANSWER> (<PROBABILITY>)] where ANSWER is either YES or NO "
             "and PROBABILITY is a percentage between 0% and 100%."
             "YES stands for \"{ci}\" and NO stands for \"{noci}\".\n"
@@ -118,8 +120,8 @@ def voting(x):
 
 
     ## sums of reported confidence
-    sumconfno =  np.sum(confs_no).tolist()
-    sumconfyes = np.sum(confs_yes).tolist()
+    sumconfno =  np.sum(confs_no)
+    sumconfyes = np.sum(confs_yes)
 
     ## wighted voting
     if sumconfno > sumconfyes:
@@ -145,23 +147,23 @@ def voting(x):
     q25confyes = None
     q75confyes = None
     if len(confs_c) > 0:
-        avgconf = np.average(confs_c).tolist()
-        stdconf =    np.std(confs_c).tolist()
-        medconf =    np.median(confs_c).tolist()
-        q25conf = np.quantile(confs_c, 0.25).tolist()
-        q75conf = np.quantile(confs_c, 0.75).tolist()
+        avgconf = np.average(confs_c)
+        stdconf =    np.std(confs_c)
+        medconf =    np.median(confs_c)
+        q25conf = np.quantile(confs_c, 0.25)
+        q75conf = np.quantile(confs_c, 0.75)
     if len(confs_no) > 0:
-        avgconfno = np.average(confs_no).tolist()
-        stdconfno =  np.std(confs_no).tolist()
-        medconfno =  np.median(confs_no).tolist()
-        q25confno = np.quantile(confs_no, 0.25).tolist()
-        q75confno = np.quantile(confs_no, 0.75).tolist()
+        avgconfno = np.average(confs_no)
+        stdconfno =  np.std(confs_no)
+        medconfno =  np.median(confs_no)
+        q25confno = np.quantile(confs_no, 0.25)
+        q75confno = np.quantile(confs_no, 0.75)
     if len(confs_yes) > 0:
-        avgconfyes = np.average(confs_yes).tolist()
-        stdconfyes = np.std(confs_yes).tolist()
-        medconfyes = np.median(confs_yes).tolist()
-        q25confyes = np.quantile(confs_yes, 0.25).tolist()
-        q75confyes = np.quantile(confs_yes, 0.75).tolist()
+        avgconfyes = np.average(confs_yes)
+        stdconfyes = np.std(confs_yes)
+        medconfyes = np.median(confs_yes)
+        q25confyes = np.quantile(confs_yes, 0.25)
+        q75confyes = np.quantile(confs_yes, 0.75)
 
 
     noconf = nNO / n 
@@ -218,7 +220,7 @@ def get_persona(data=None):
     if data is None:
         return PRS0
     else:
-        if data['field'] is None:
+        if data.get('field') is None:
             return PRS0
         else:
             return PRS1.format(**data)
@@ -227,7 +229,7 @@ def get_persona(data=None):
 def get_context(data=None):
     if data is None:
         return ""
-    if data['context'] is None:
+    if data.get('context') is None:
         return ""
     return data['context']
 
@@ -247,11 +249,15 @@ def get_var_descritpions(data=None, x=None,y=None,z=None):
     if z is not None:
         if len(z) > 0:
             vs = vs + z
-    out = ("{context}\n"
-           "Consider the following variables:\n").format(**data)
+    if data.get("context") is None:
+        out = "Consider the following variables:\n"
+    else:
+        out = ("{context}\n"
+                "Consider the following variables:\n").format(**data)
     for v in data['variables']:
-        if v['name'] in vs:
-            out = out + "- {name}: {description}\n".format(**v) 
+        out = out + "- {name}: {description}\n".format(**v) 
+        #if v['name'] in vs:
+        #    out = out + "- {name}: {description}\n".format(**v) 
     return out
 
 # this function generate the cis in question format 
@@ -322,7 +328,7 @@ dryrun: bool, default = False
 async def gpt_ci(x, y, z=None, data=None,
            model="gpt-3.5-turbo", temperature=None, n = 1,
            instruction = INST3, response_template = RSPTMPL2,
-           verbose = False, tryagain = False, tdelay = 1, dryrun = False):
+           verbose = False, tryagain = False, tdelay = 1, dryrun = False, out = None):
 
     # if z is emtpy just put None
     if z is not None:
@@ -341,8 +347,8 @@ async def gpt_ci(x, y, z=None, data=None,
     ci = get_ci(x,y,z)
     noci = get_noci(x,y,z)
     prompt = f"system: {persona} \n system: {instruction} \n" 
-    prompt = prompt +  f"system: {response_template.format(ci = ci, noci = noci)}\n"
     prompt = prompt + f"user: {vdescription}\n{qci}" 
+    prompt = prompt +  f"system: {response_template.format(ci = ci, noci = noci)}\n"
     if verbose:
         print(prompt)
     try:
@@ -363,8 +369,8 @@ async def gpt_ci(x, y, z=None, data=None,
                     messages=[
                         {"role": "system", "content": persona},
                         {"role": "system", "content": instruction},
-                        {"role": "system", "content": response_template.format(ci=ci, noci=noci)},
-                        {"role": "user", "content": vdescription + "\n" + qci}
+                        {"role": "user", "content": vdescription + "\n" + qci},
+                        {"role": "system", "content": response_template.format(ci=ci, noci=noci)}
                         ])
 
             results = [res['message']['content'] for res in response['choices']] 
@@ -406,8 +412,8 @@ def gpt_ci_sync(x, y, z=None, data=None,
     ci = get_ci(x,y,z)
     noci = get_noci(x,y,z)
     prompt = f"system: {persona} \n system: {instruction} \n" 
-    prompt = prompt +  f"system: {response_template.format(ci = ci, noci = noci)}\n"
     prompt = prompt + f"user: {vdescription}\n{qci}" 
+    prompt = prompt +  f"system: {response_template.format(ci = ci, noci = noci)}\n"
     if verbose:
         print(prompt)
     try:
@@ -428,8 +434,8 @@ def gpt_ci_sync(x, y, z=None, data=None,
                     messages=[
                         {"role": "system", "content": persona},
                         {"role": "system", "content": instruction},
-                        {"role": "system", "content": response_template.format(ci=ci, noci=noci)},
-                        {"role": "user", "content": vdescription + "\n" + qci}
+                        {"role": "user", "content": vdescription + "\n" + qci},
+                        {"role": "system", "content": response_template.format(ci=ci, noci=noci)}
                         ])
 
             results = [res['message']['content'] for res in response['choices']] 
@@ -472,7 +478,8 @@ async def gpt_cis(cis, data,
                                    name = i) 
         tasks.add(task)
         await asyncio.sleep(0.01) ## wait 1/100 seconds between requests at least
-    await asyncio.gather(*tasks)
+    await tqdm_asyncio.gather(*tasks)
+    #await asyncio.gather(*tasks)
 
     print(f"total task executed: {len(tasks)}")
     results = [None] * len(cis)
