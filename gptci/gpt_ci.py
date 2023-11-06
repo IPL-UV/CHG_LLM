@@ -245,7 +245,8 @@ def get_var_descritpions(data=None, x=None,y=None,z=None):
             y = [y]
         vs = x + y
     if z is not None:
-        vs = vs + z
+        if len(z) > 0:
+            vs = vs + z
     out = ("{context}\n"
            "Consider the following variables:\n").format(**data)
     for v in data['variables']:
@@ -323,6 +324,10 @@ async def gpt_ci(x, y, z=None, data=None,
            instruction = INST3, response_template = RSPTMPL2,
            verbose = False, tryagain = False, tdelay = 1, dryrun = False):
 
+    # if z is emtpy just put None
+    if z is not None:
+        if len(z) == 0:
+            z = None
     # if x,y are list and length 1 reduce them
     if type(x) is list:
         if len(x) == 1:
@@ -384,6 +389,10 @@ def gpt_ci_sync(x, y, z=None, data=None,
            instruction = INST3, response_template = RSPTMPL2,
            verbose = False, tryagain = False, tdelay = 1, dryrun = False):
 
+    # if z is emtpy just put None
+    if z is not None:
+        if len(z) == 0:
+            z = None
     # if x,y are list and length 1 reduce them
     if type(x) is list:
         if len(x) == 1:

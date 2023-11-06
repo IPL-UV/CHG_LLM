@@ -3,6 +3,7 @@ import sys
 import yaml
 import asyncio 
 import logging 
+from itertools import chain, combinations
 
 from dotenv import load_dotenv
 from pgmpy.base import DAG
@@ -16,14 +17,57 @@ import pandas as pd
 
 from sklearn.metrics import accuracy_score
 
+# https://docs.python.org/3/library/itertools.html
+def powerset(iterable, m = None):
+    "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
+    s = list(iterable)
+    if m is None:
+        m = len(s)
+    return chain.from_iterable(combinations(s, r) for r in range(m+1))
+
+
 def get_vars(edges):
     return  list(set([e['from'] for e in edges] + [e['to'] for e in edges]))
+
 
 def get_dag(edges):
     all_variables = list(set([e['from'] for e in edges] + [e['to'] for e in edges]))
     dag = DAG([(e['from'], e['to']) for e in edges])
     return dag
  
+
+def get_all_cis(data, max_cond_set = None):
+    variables = [v['name'] for v in data['variables']]
+    edges = data['graph']
+    dag = get_dag(edges)
+    all_indep = dag.get_independencies()
+    cis = []
+    for i in range(1,len(variables)):
+        for j  in range(i):
+            tmp = set(variables.copy())
+            tmp.remove(variables[i])
+            tmp.remove(variables[j])
+            rest = list(tmp)
+            pws = list(powerset(rest, max_cond_set))
+            for condset in pws:
+                ci = { "x": variables[i],
+                    "y": variables[j],
+                    "z": list(condset)}
+                if all_indep.contains(get_assertion(**ci)):
+                    answ = "YES"
+                else:
+                    answ = "NO"
+                ci['answ'] = answ
+                cis = cis + [ci] + [{
+                    "x": variables[j],
+                    "y": variables[i],
+                    "z": list(condset),
+                    "answ": answ}]
+                                    
+    return cis
+
+
+
 def get_cis(edges, translate=False):
     dag = get_dag(edges)
     cis = dag.get_independencies()
@@ -94,6 +138,7 @@ async def main():
     parser.add_argument("--listed", action="store_true", help="evaluate listed cis")
     parser.add_argument("--random", type=int, default=0, help="number of random cis from true graph [%(default)s]")
     parser.add_argument("--valid", type=int, default=0, help="number of valid cis from true graph [%(default)s]")
+    parser.add_argument("--all", action = "store_true", default = False, help="if all statements should be tested [CAREFUL CAN BE A LOT of $$]")
     parser.add_argument("--model", type=str, default="gpt-3.5-turbo", help="model to use [%(default)s]")
     parser.add_argument("--n", type=int, default=10, help="number of answer requested from model [%(default)s]")
     parser.add_argument("--temperature", type=float, default=None, help="temperature for the model [%(default)s]")
@@ -138,6 +183,15 @@ async def main():
                 ci.update({"type":"random"})
             cis = cis + sampled_cis
 
+    if args.all:
+        if data['graph'] is None:
+            print("no graph provided, it is not possible to check which CIs are valid, running anyway...")
+        all_cis = get_all_cis(data, max_cond_set = args.maxcond)
+        cis = cis + all_cis
+
+
+
+    ## TODO take away duplicates???
     print(cis)
 
     if args.dryrun:
