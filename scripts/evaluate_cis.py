@@ -31,7 +31,6 @@ def get_vars(edges):
 
 
 def get_dag(edges):
-    all_variables = list(set([e['from'] for e in edges] + [e['to'] for e in edges]))
     dag = DAG([(e['from'], e['to']) for e in edges])
     return dag
  
@@ -192,7 +191,7 @@ async def main():
 
 
     ## TODO take away duplicates???
-    print(cis)
+    #print(cis)
 
     if args.dryrun:
         tdelay = 0
@@ -201,7 +200,8 @@ async def main():
     results = await gpt_cis(cis, data,
             model=args.model,
             n=args.n,
-            temperature=args.temperature, tdelay = tdelay, dryrun = args.dryrun, verbose = args.verbose)
+            temperature=args.temperature, tdelay = tdelay,
+            dryrun = args.dryrun, verbose = args.verbose)
     
     ## append results to cis 
     for i in range(len(cis)):
