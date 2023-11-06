@@ -320,7 +320,7 @@ dryrun: bool, default = False
 """
 async def gpt_ci(x, y, z=None, data=None,
            model="gpt-3.5-turbo", temperature=None, n = 1,
-           instruction = INST1, response_template = RSPTMPL1,
+           instruction = INST3, response_template = RSPTMPL2,
            verbose = False, tryagain = False, tdelay = 1, dryrun = False):
 
     # if x,y are list and length 1 reduce them
@@ -335,11 +335,11 @@ async def gpt_ci(x, y, z=None, data=None,
     qci = get_qci(x,y,z)
     ci = get_ci(x,y,z)
     noci = get_noci(x,y,z)
+    prompt = f"system: {persona} \n system: {instruction} \n" 
+    prompt = prompt +  f"system: {response_template.format(ci = ci, noci = noci)}\n"
+    prompt = prompt + f"user: {vdescription}\n{qci}" 
     if verbose:
-        print(f"system: {persona}")
-        print(f"system: {instruction}")
-        print(f"system: {response_template.format(ci = ci, noci = noci)}")
-        print(f"user: {vdescription}\n{qci}")
+        print(prompt)
     try:
         if dryrun:
             if random() > 0.5:
@@ -347,7 +347,7 @@ async def gpt_ci(x, y, z=None, data=None,
                 results = [res['message']['content'] for res in response['choices']] 
                 parsed = [parse_response(res) for res in results] 
                 voted = voting(parsed)
-                return voted, parsed, results
+                return voted, parsed, results, prompt
             else: 
                 raise Exception("test exception")
         else:
@@ -365,7 +365,7 @@ async def gpt_ci(x, y, z=None, data=None,
             results = [res['message']['content'] for res in response['choices']] 
             parsed = [parse_response(res) for res in results] 
             voted = voting(parsed)
-            return voted, parsed, results
+            return voted, parsed, results, prompt
 
     except Exception as inst:
         print("error from server (likely)")
@@ -381,7 +381,7 @@ async def gpt_ci(x, y, z=None, data=None,
 
 def gpt_ci_sync(x, y, z=None, data=None,
            model="gpt-3.5-turbo", temperature=None, n = 1,
-           instruction = INST1, response_template = RSPTMPL1,
+           instruction = INST3, response_template = RSPTMPL2,
            verbose = False, tryagain = False, tdelay = 1, dryrun = False):
 
     # if x,y are list and length 1 reduce them
@@ -396,11 +396,11 @@ def gpt_ci_sync(x, y, z=None, data=None,
     qci = get_qci(x,y,z)
     ci = get_ci(x,y,z)
     noci = get_noci(x,y,z)
+    prompt = f"system: {persona} \n system: {instruction} \n" 
+    prompt = prompt +  f"system: {response_template.format(ci = ci, noci = noci)}\n"
+    prompt = prompt + f"user: {vdescription}\n{qci}" 
     if verbose:
-        print(f"system: {persona}")
-        print(f"system: {instruction}")
-        print(f"system: {response_template.format(ci = ci, noci = noci)}")
-        print(f"user: {vdescription}\n{qci}")
+        print(prompt)
     try:
         if dryrun:
             if random() > 0.5:
@@ -408,7 +408,7 @@ def gpt_ci_sync(x, y, z=None, data=None,
                 results = [res['message']['content'] for res in response['choices']] 
                 parsed = [parse_response(res) for res in results] 
                 voted = voting(parsed)
-                return voted, parsed, results
+                return voted, parsed, results, prompt
             else: 
                 raise Exception("test exception")
         else:
@@ -426,7 +426,7 @@ def gpt_ci_sync(x, y, z=None, data=None,
             results = [res['message']['content'] for res in response['choices']] 
             parsed = [parse_response(res) for res in results] 
             voted = voting(parsed)
-            return voted, parsed, results
+            return voted, parsed, results, prompt
 
     except Exception as inst:
         print("error from server (likely)")
@@ -444,7 +444,7 @@ def gpt_ci_sync(x, y, z=None, data=None,
 ## async reqests for multiple cis
 async def gpt_cis(cis, data,
                   model = "gpt-3.5-turbo", n = 1, temperature = None, 
-                  instruction = INST1, response_template = RSPTMPL1,
+                  instruction = INST3, response_template = RSPTMPL2,
                   tdelay = 60, dryrun = False, verbose = False):
 
     tasks = set()
@@ -474,7 +474,7 @@ async def gpt_cis(cis, data,
             i = int(task.get_name())
             results[i] = task.result()
 
-    return results
+    return results  
 
 
 ### similar to ci testing but asking causal question....
