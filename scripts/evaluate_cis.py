@@ -100,6 +100,7 @@ async def main():
     parser.add_argument("--maxcond", type=int, default=None, help="maximum conditioning set [%(default)s]")
     parser.add_argument("--out", type=str, default=None, help="if not None, the directory name where to save results [%(default)s]")
     parser.add_argument("--dryrun", action="store_true", default = False, help="this option will not actually call the api")
+    parser.add_argument("--verbose", action="store_true", default = False, help="verbose?")
 
     args = parser.parse_args()
     data_file = args.data 
@@ -146,7 +147,7 @@ async def main():
     results = await gpt_cis(cis, data,
             model=args.model,
             n=args.n,
-            temperature=args.temperature, tdelay = tdelay, dryrun = args.dryrun)
+            temperature=args.temperature, tdelay = tdelay, dryrun = args.dryrun, verbose = args.verbose)
     
     ## append results to cis 
     for i in range(len(cis)):
