@@ -93,29 +93,101 @@ def voting(x):
     answs = [xx[0] for xx in x]
     confs = [xx[1] for xx in x]
     nNO = answs.count("NO")
-    nYES = answs.count("YES")
+    nYES = answs.count("YES") 
     n = len(x)
+    
+    ## voting
     if nNO > nYES:
         out = "NO"
     if nNO < nYES:
         out = "YES"
     if nNO == nYES:
         out = "Uncertain"
-    confmask = [c is None for c in confs] 
-    nomask = [a != "NO" for a in answs]
-    yesmask = [a != "YES" for a in answs]
-    avgconf = np.average(np.ma.array(confs, mask = confmask))
-    avgconfno = np.average(np.ma.array(confs, mask = nomask))
-    avgconfyes = np.average(np.ma.array(confs, mask = yesmask))
+    
+    ## masking None values
+    confmask = [c is not None for c in confs] 
+    nomask = [a == "NO" and c is not None for a, c in zip(answs, confs)]
+    yesmask = [a == "YES" and c is not None for a, c in zip(answs, confs)]
+    
+ 
+    ## cleaned values
+    confs_c = np.array(confs)[confmask]
+    confs_no = np.array(confs)[nomask]
+    confs_yes = np.array(confs)[yesmask]
+
+
+    ## sums of reported confidence
+    sumconfno =  np.sum(confs_no)
+    sumconfyes = np.sum(confs_yes) 
+
+    ## wighted voting
+    if sumconfno > sumconfyes:
+        wout = "NO"
+    if sumconfno < sumconfyes:
+        wout = "YES"
+    if sumconfno == sumconfyes:
+        wout = "Uncertain"
+    
+    avgconf = None 
+    avgconfno = None 
+    avgconfyes = None 
+    stdconf = None 
+    stdconfno = None 
+    stdconfyes = None
+    medconf = None 
+    medconfno = None 
+    medconfyes = None
+    q25conf = None
+    q75conf = None
+    q25confno = None
+    q75confno = None
+    q25confyes = None
+    q75confyes = None
+    if len(confs_c) > 0:
+        avgconf = np.average(confs_c)
+        stdconf =    np.std(confs_c)
+        medconf =    np.median(confs_c)
+        q25conf = np.quantile(confs_c, 0.25)
+        q75conf = np.quantile(confs_c, 0.75)
+    if len(confs_no) > 0:
+        avgconfno = np.average(confs_no)
+        stdconfno =  np.std(confs_no)
+        medconfno =  np.median(confs_no)
+        q25confno = np.quantile(confs_no, 0.25)
+        q75confno = np.quantile(confs_no, 0.75)
+    if len(confs_yes) > 0:
+        avgconfyes = np.average(confs_yes)
+        stdconfyes = np.std(confs_yes)
+        medconfyes = np.median(confs_yes)
+        q25confyes = np.quantile(confs_yes, 0.25)
+        q75confyes = np.quantile(confs_yes, 0.75)
+
+
     noconf = nNO / n 
     yesconf = nYES / n 
     return {"pred" : out,
+            "wpred": wout,
             "n_no" : nNO, "n_yes" : nYES, "n" : n,
             "no_conf": noconf,
             "yes_conf": yesconf,
-            "avg_rep_conf" : avgconf,
-            "avg_rep_no_conf": avgconfno, 
-            "avg_rep_yes_conf": avgconfyes} 
+            "sum_rep_no_conf":  sumconfno,
+            "sum_rep_yes_conf": sumconfyes,
+            "avg_rep_conf" :    avgconf,
+            "avg_rep_no_conf":  avgconfno, 
+            "avg_rep_yes_conf": avgconfyes,
+            "std_rep_conf" :    stdconf,
+            "std_rep_no_conf":  stdconfno, 
+            "std_rep_yes_conf": stdconfyes,
+            "med_rep_conf" :    medconf,
+            "med_rep_no_conf":  medconfno, 
+            "med_rep_yes_conf": medconfyes,
+            "q25_rep_conf" :    q25conf,
+            "q25_rep_no_conf":  q25confno, 
+            "q25_rep_yes_conf": q25confyes,
+            "q75_rep_conf" :    q75conf,
+            "q75_rep_no_conf":  q75confno, 
+            "q75_rep_yes_conf": q75confyes
+            } 
             
 
 def parse_response(response):
@@ -125,12 +197,17 @@ def parse_response(response):
     ## locate [YES (xx%)]
     yes = re.search(YES, response)
 
+    conf = None
     if yes is not None:
         answ = "YES"
-        conf = float(re.search('\(\d{1,3}\%\)', yes[0])[0][1:-2])
+        conf_s = re.search('\(\d{1,3}\%\)', yes[0])
+        if conf_s is not None:
+            conf = float(conf_s[0][1:-2]) / 100
     elif no is not None:
         answ = "NO"
-        conf = float(re.search('\(\d{1,3}\%\)', no[0])[0][1:-2])
+        conf_s = re.search('\(\d{1,3}\%\)', no[0])
+        if conf_s is not None:
+            conf = float(conf_s[0][1:-2]) / 100
     else: 
         answ = None
         conf = None
@@ -225,7 +302,7 @@ temperature: float, default = None (it will default to the API defualt 1)
 model: str, default = "gpt-3.5-turbo"
  The name of the openai model to be called
 n: int, default = 1
- The number of answer requested to the model, if n > 1 
+ The numbergg of answer requested to the model, if n > 1 
  voting is applied to obtain an answer
 instruction: str, default = INST1 
  The instruction on the task 
