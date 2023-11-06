@@ -170,7 +170,9 @@ async def main():
         dr = os.path.join(args.out, bn)
         os.makedirs(dr, exist_ok=True)
         fn = os.path.join(dr, "{0}.csv") 
-        cisdf.to_csv(fn.format("predictions"))
+        cisdf.to_csv(fn.format("predictions")) 
+        with open(os.path.join(dr,'raw.yml'), 'w') as outfile:
+            yaml.dump(results, outfile)
 
 if __name__ == "__main__":
     asyncio.run(main())
