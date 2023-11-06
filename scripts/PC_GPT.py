@@ -29,7 +29,7 @@ def main():
     openai.api_key = os.getenv("OPENAI_API_KEY")
 
     openai.util.logger.setLevel(logging.WARNING)
-    parser = argparse.ArgumentParser(description="Evaluating conditional independence test")
+    parser = argparse.ArgumentParser(description="Running PC algorithm")
     parser.add_argument("data", type=str, help="Path to the YAML data file")
     parser.add_argument("--model", type=str, default="gpt-3.5-turbo", help="model to use [%(default)s]")
     parser.add_argument("--n", type=int, default=10, help="number of answer requested from model [%(default)s]")
