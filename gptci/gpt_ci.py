@@ -91,8 +91,8 @@ YES = '\[\s*YES.*\]'
 
 
 def voting(x):
-    answs = [xx[0] for xx in x]
-    confs = [xx[1] for xx in x]
+    answs = [xx["answ"] for xx in x]
+    confs = [xx["conf"] for xx in x]
     nNO = answs.count("NO")
     nYES = answs.count("YES") 
     n = len(x)
@@ -118,8 +118,8 @@ def voting(x):
 
 
     ## sums of reported confidence
-    sumconfno =  np.sum(confs_no)
-    sumconfyes = np.sum(confs_yes) 
+    sumconfno =  np.sum(confs_no).tolist()
+    sumconfyes = np.sum(confs_yes).tolist()
 
     ## wighted voting
     if sumconfno > sumconfyes:
@@ -145,23 +145,23 @@ def voting(x):
     q25confyes = None
     q75confyes = None
     if len(confs_c) > 0:
-        avgconf = np.average(confs_c)
-        stdconf =    np.std(confs_c)
-        medconf =    np.median(confs_c)
-        q25conf = np.quantile(confs_c, 0.25)
-        q75conf = np.quantile(confs_c, 0.75)
+        avgconf = np.average(confs_c).tolist()
+        stdconf =    np.std(confs_c).tolist()
+        medconf =    np.median(confs_c).tolist()
+        q25conf = np.quantile(confs_c, 0.25).tolist()
+        q75conf = np.quantile(confs_c, 0.75).tolist()
     if len(confs_no) > 0:
-        avgconfno = np.average(confs_no)
-        stdconfno =  np.std(confs_no)
-        medconfno =  np.median(confs_no)
-        q25confno = np.quantile(confs_no, 0.25)
-        q75confno = np.quantile(confs_no, 0.75)
+        avgconfno = np.average(confs_no).tolist()
+        stdconfno =  np.std(confs_no).tolist()
+        medconfno =  np.median(confs_no).tolist()
+        q25confno = np.quantile(confs_no, 0.25).tolist()
+        q75confno = np.quantile(confs_no, 0.75).tolist()
     if len(confs_yes) > 0:
-        avgconfyes = np.average(confs_yes)
-        stdconfyes = np.std(confs_yes)
-        medconfyes = np.median(confs_yes)
-        q25confyes = np.quantile(confs_yes, 0.25)
-        q75confyes = np.quantile(confs_yes, 0.75)
+        avgconfyes = np.average(confs_yes).tolist()
+        stdconfyes = np.std(confs_yes).tolist()
+        medconfyes = np.median(confs_yes).tolist()
+        q25confyes = np.quantile(confs_yes, 0.25).tolist()
+        q75confyes = np.quantile(confs_yes, 0.75).tolist()
 
 
     noconf = nNO / n 
@@ -212,7 +212,7 @@ def parse_response(response):
     else: 
         answ = None
         conf = None
-    return answ, conf
+    return {"answ" : answ, "conf" : conf}
 
 def get_persona(data=None):
     if data is None:
