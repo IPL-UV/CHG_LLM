@@ -50,16 +50,16 @@ INST3 = ("You will be asked to provide your best guess and your uncertainty "
 
 
 QINDEP = "is {x} independent of {y} ?"
-QCINDEP = "is {x} independent of {y} given {z} ?"
+QCINDEP = "is {x} independent of {y} conditioned on {z} ?"
 
 INDEP = "{x} is independent of {y}"
-CINDEP = "{x} is independent of {y} given {z}"
+CINDEP = "{x} is independent of {y} conditioned on {z}"
 
 DEP = "{x} is not independent of {y}"
-CDEP = "{x} is not independent of {y} given {z}"
+CDEP = "{x} is not independent of {y} conditioned on {z}"
 
 DEP3 = "{x} and {y} are dependent"
-CDEP3 = "{x} and {y} are dependent given {z}"
+CDEP3 = "{x} and {y} are dependent conditioned on {z}"
 
 
 
