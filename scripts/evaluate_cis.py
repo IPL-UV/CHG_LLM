@@ -3,6 +3,7 @@ import sys
 import yaml
 import asyncio 
 import logging 
+from datetime import datetime
 from itertools import chain, combinations
 
 from dotenv import load_dotenv
@@ -197,6 +198,8 @@ async def main():
         tdelay = 0
     else:
         tdelay = 10
+    
+    tmstp = datetime.now()
     results = await gpt_cis(cis, data,
             model=args.model,
             n=args.n,
@@ -221,7 +224,7 @@ async def main():
 
     if args.out is not None:
         bn = os.path.basename(data_file).split(".")[0]
-        dr = os.path.join(args.out, bn)
+        dr = os.path.join(args.out, bn, tmstp)
         os.makedirs(dr, exist_ok=True)
         fn = os.path.join(dr, "{0}.csv") 
         cisdf.to_csv(fn.format("predictions")) 
