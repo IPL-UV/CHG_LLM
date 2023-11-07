@@ -255,9 +255,9 @@ def get_var_descritpions(data=None, x=None,y=None,z=None):
         out = ("{context}\n"
                 "Consider the following variables:\n").format(**data)
     for v in data['variables']:
-        out = out + "- {name}: {description}\n".format(**v) 
-        #if v['name'] in vs:
-        #    out = out + "- {name}: {description}\n".format(**v) 
+        #out = out + "- {name}: {description}\n".format(**v) 
+        if v['name'] in vs:
+            out = out + "- {name}: {description}\n".format(**v) 
     return out
 
 # this function generate the cis in question format 
