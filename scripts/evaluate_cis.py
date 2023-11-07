@@ -15,6 +15,7 @@ from gptci import *
 import random
 import numpy as np
 import pandas as pd
+import git
 
 from sklearn.metrics import accuracy_score
 
@@ -199,7 +200,12 @@ async def main():
     else:
         tdelay = 10
     
-    tmstp = datetime.now()
+    ### tmstamp and git hash 
+    tmstp = str(datetime.now())
+    repo = git.Repo(search_parent_directories=True)
+    sha = repo.head.object.hexsha
+
+    ## get results 
     results = await gpt_cis(cis, data,
             model=args.model,
             n=args.n,
@@ -208,7 +214,10 @@ async def main():
     
     ## append results to cis 
     for i in range(len(cis)):
+        
         cis[i].update(results[i][0])
+        cis[i].update({"sha" : sha, "tmstmp" : tmstp, 
+                       "model" : args.model, "temperature" : args.temperature}) 
 
     ######### prepare final results
     cisdf = pd.DataFrame(cis)
