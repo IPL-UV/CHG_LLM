@@ -11,7 +11,7 @@ variables:
     description : "whether the patient is suffering from Dyspnoea" 
   - name : Xray
     description : "Denotes the positive result from a chest X-ray."
-context:  "Various related model factors influencing the probability of cancer in a patient at a medical center."
+context:  "Various related modelling factors influencing the probability of cancer in a patient at a medical center."
 graph:
   - from: Pollution
     to: Cancer
