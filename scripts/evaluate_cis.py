@@ -39,9 +39,10 @@ def get_dag(edges):
 
 def get_all_cis(data, max_cond_set = None):
     variables = [v['name'] for v in data['variables']]
-    edges = data['graph']
-    dag = get_dag(edges)
-    all_indep = dag.get_independencies()
+    if data.get('graph') is not None:
+        edges = data['graph']
+        dag = get_dag(edges)
+        all_indep = dag.get_independencies()
     cis = []
     for i in range(1,len(variables)):
         for j  in range(i):
@@ -54,10 +55,13 @@ def get_all_cis(data, max_cond_set = None):
                 ci = { "x": variables[i],
                     "y": variables[j],
                     "z": list(condset)}
-                if all_indep.contains(get_assertion(**ci)):
-                    answ = "YES"
-                else:
-                    answ = "NO"
+                answ = "UNK"
+
+                if data.get('graph') is not None:
+                    if all_indep.contains(get_assertion(**ci)):
+                        answ = "YES"
+                    else:
+                        answ = "NO"
                 ci['answ'] = answ
                 cis = cis + [ci] + [{
                     "x": variables[j],
@@ -112,17 +116,24 @@ def sample_valid_cis(variables):
     ## TODO
 
 def sample_cis(data, k = 1, min_cond_set = 0, max_cond_set = None):
-    edges = data['graph']
-    dag = get_dag(edges)
+
+    if data.get('graph') is not None:
+        edges = data['graph']
+        dag = get_dag(edges)
+        all_indep = dag.get_independencies()
+
     cis = k * [None]
-    all_indep = dag.get_independencies()
     for i in range(k):
-        variables = get_vars(edges)
+        variables = [v['name'] for v in data['variables']]
         ci = sample_ci(variables, min_cond_set, max_cond_set)
-        if all_indep.contains(get_assertion(**ci)):
-            ci['answ'] = "YES"
+        
+        if data.get('graph') is not None:
+            if all_indep.contains(get_assertion(**ci)):
+                ci['answ'] = "YES"
+            else:
+                ci['answ'] = "NO" 
         else:
-            ci['answ'] = "NO" 
+            ci['answ'] = "UNK"
         cis[i] = ci
     return cis
     
@@ -175,17 +186,17 @@ async def main():
         
 
     if args.random > 0:
-        if data['graph'] is None:
-            print("no graph provided, it is not possible to sample cis")
-        else:
-            print(f"generate {args.random} random ci statements")
-            sampled_cis = sample_cis(data, int(args.random), max_cond_set = args.maxcond)
-            for ci in sampled_cis:
-                ci.update({"type":"random"})
-            cis = cis + sampled_cis
+        if data.get("graph") is None:
+            print("no graph provided, it is not possible to validate cis")
+
+        print(f"generate {args.random} random ci statements")
+        sampled_cis = sample_cis(data, int(args.random), max_cond_set = args.maxcond)
+        for ci in sampled_cis:
+            ci.update({"type":"random"})
+        cis = cis + sampled_cis
 
     if args.all:
-        if data['graph'] is None:
+        if data.get("graph") is None:
             print("no graph provided, it is not possible to check which CIs are valid, running anyway...")
         all_cis = get_all_cis(data, max_cond_set = args.maxcond)
         cis = cis + all_cis
@@ -225,8 +236,8 @@ async def main():
     ## store name of data
     cisdf["data"] = os.path.basename(data_file).split(".")[0] 
 
-    acc = accuracy_score(cisdf['answ'], cisdf['pred'])
-    print(f'accuracy : {acc} \n')
+    #acc = accuracy_score(cisdf['answ'], cisdf['pred'])
+    #print(f'accuracy : {acc} \n')
 
     print(cisdf.to_markdown())
 
