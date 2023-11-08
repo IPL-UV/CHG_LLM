@@ -47,16 +47,16 @@ INST3 = ("You will be asked to provide your best guess and your uncertainty "
         "and the probability that your guess is correct.\n"
         "Answer only in the required format.\n")
 
-
+cond = 'conditionally '
 
 QINDEP = "is {x} independent of {y} ?"
-QCINDEP = "is {x} independent of {y} given {z} ?"
+QCINDEP = "is {x} {cond}independent of {y} given {z} ?"
 
 INDEP = "{x} is independent of {y}"
-CINDEP = "{x} is independent of {y} given {z}"
+CINDEP = "{x} is {cond}independent of {y} given {z}"
 
 DEP = "{x} is not independent of {y}"
-CDEP = "{x} is not independent of {y} given {z}"
+CDEP = "{x} is not {cond}independent of {y} given {z}"
 
 DEP3 = "{x} and {y} are dependent"
 CDEP3 = "{x} and {y} are dependent given {z}"
@@ -84,6 +84,45 @@ RSPTMPL2 = ("Work out the answer in a step-by-step way to be as "
             "and PROBABILITY is a percentage between 0% and 100%."
             "YES stands for \"{ci}\" and NO stands for \"{noci}\".\n"
             "For example [NO (50%)] or [YES (50%)].")
+
+RSPTMPL3 = ("Work out the answer in a step-by-step way to be as "
+            "sure as possible that you have the right answer."
+            "After explaining your reasoning, "
+            "provide the answer in the following form: "
+            "[<ANSWER> (<PROBABILITY>)] where ANSWER is either YES or NO "
+            "and PROBABILITY is a percentage between 0% and 100%."
+            "YES stands for \"{ci}\" and NO stands for \"{noci}\".\n"
+            "Here are three examples:\n"
+            "First example:\n"
+            "To determine if ice cream sales (X) is conditionally independent of drowning incidents (Y)"
+            "given [temperature (Z)], we need to consider if knowing Z makes X and Y carry information about the"
+            "occurance of each other. There is a known correlation between ice cream sales and "
+            "drowning incidents. However, we have reason to believe that temperature is a confounder "
+            "that explains both X and Y. For example, higher temperatures may lead to both "
+            "increased ice cream sales and more people going to the beach, "
+            "increasing the likelihood of drowning incidents. "
+            "This means that, for a given temperature, the occurrence or non-occurrence of drowning "
+            "incidents likely doesn't provide any additional information about ice cream sales beyond "
+            "what is already known from the temperature."
+            "Based on this reasoning, we can conclude:\n\n[YES (85%)]\n\n"
+            "Second example:\n"
+            "To determine if ice cream sales (X) is independent of drowning incidents (Y), "
+            "we need to consider if X and Y carry information about the"
+            "occurance of each other. There is a known correlation between ice cream sales and "
+            "drowning incidents."
+            "ice cream sales tend to increase at the same time as drowning incidents."
+            "Based on this reasoning, we can conclude:\n\n[NO (90%)]\n\n"
+            "Third example:\n"
+            "To determine if hours of sleep (X) is conditionally independent of academic performance (Y) "
+            "given [extracurricular activities (Z)], we need to consider if knowing Z makes X and Y carry information about the"
+            "occurance of each other. There is no known or only very weak correlation between X and "
+            "Y. However, Students who perform well academically tend to engage in more extracurricular activities."
+            "Students who get more sleep tend to engage in fewer extracurricular activities."
+            "Z is influenced by both X and Y. If we take a student with a lot of extracurricular activities "
+            "a good academic performance probably goes hand in hand with few hours of sleep. Conditioning on Z therefore "
+            "leads to a spurious correlation between X and Y. Given Z there seems to be an information flow between X and Y."
+            "Based on this reasoning, we can conclude:\n\n[NO (80%)]"
+            )
 
 #NO = '\[NO \(\d{1,3}\%\)\]'
 NO = '\[\s*NO.*\]'
