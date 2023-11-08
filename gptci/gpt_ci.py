@@ -7,6 +7,7 @@ from pybnesian import IndependenceTest
 from time import sleep
 import pandas as pd
 from tqdm.asyncio import tqdm_asyncio
+from scipy.stats import norm
 
 PRS0 = "You are a helpful expert willing to answer questions."
 PRS1 = "You are a helpful expert in {field} willing to answer questions."
@@ -50,16 +51,16 @@ INST3 = ("You will be asked to provide your best guess and your uncertainty "
 cond = 'conditionally '
 
 QINDEP = "is {x} independent of {y} ?"
-QCINDEP = "is {x} {cond}independent of {y} given {z} ?"
+QCINDEP = "is {x} {cond}independent of {y} conditioned on {z} ?"
 
 INDEP = "{x} is independent of {y}"
-CINDEP = "{x} is {cond}independent of {y} given {z}"
+CINDEP = "{x} is {cond}independent of {y} conditioned on {z}"
 
 DEP = "{x} is not independent of {y}"
-CDEP = "{x} is not {cond}independent of {y} given {z}"
+CDEP = "{x} is not {cond}independent of {y} conditioned on {z}"
 
 DEP3 = "{x} and {y} are dependent"
-CDEP3 = "{x} and {y} are dependent given {z}"
+CDEP3 = "{x} and {y} are dependent conditioned on {z}"
 
 
 
@@ -294,9 +295,9 @@ def get_var_descritpions(data=None, x=None,y=None,z=None):
         out = ("{context}\n"
                 "Consider the following variables:\n").format(**data)
     for v in data['variables']:
-        out = out + "- {name}: {description}\n".format(**v) 
-        #if v['name'] in vs:
-        #    out = out + "- {name}: {description}\n".format(**v) 
+        #out = out + "- {name}: {description}\n".format(**v) 
+        if v['name'] in vs:
+            out = out + "- {name}: {description}\n".format(**v) 
     return out
 
 # this function generate the cis in question format 
@@ -392,7 +393,7 @@ async def gpt_ci(x, y, z=None, data=None,
         print(prompt)
     try:
         if dryrun:
-            if random() > 0.5:
+            if random() > 0:
                 response = {"choices": [{"message": {"content":"[NO (0%)]"}}] * n }
                 results = [res['message']['content'] for res in response['choices']] 
                 parsed = [parse_response(res) for res in results] 
@@ -632,15 +633,36 @@ def gpt_ci_list(cis, data=None, temperature=None, model="gpt-3.5-turbo-instruct"
     
     return [(parse_response(res), res) for res in results]
 
+def test_prop(n_no, n_yes, n, null = "YES", alpha = 0.05):
+    p_no = n_no / n # prop of no
+    p_yes = n_yes / n # prop of yes
+    p = (n_no + n_yes) / (2*n) # pooled prop 
+    se = np.sqrt( p * (1 - p) * 2 / n) # standard error 
+    if null == "YES":  
+        answ = "YES"
+        pval = norm.sf((p_no - p_yes) / se) # p_no - p_yes >> 0 is extreme for null == "YES" 
+        if pval <= alpha:
+            answ = "NO"
+    if null == "NO":
+        answ = "NO"
+        pval = norm.sf((p_yes - p_no) / se) # p_yes - p_no >> 0 is extreme for null == "NO" 
+        if pval <= alpha:
+            answ = "YES"
+    return answ, pval
+
+# method can be vot (voting), wvot (weighted voting), stat (hyp test on proportions)
 class GPTIndependenceTest(IndependenceTest):
-    def __init__(self, data, model, n, temperature, verbose = False, pre_stored_file=None):
+    def __init__(self, data, model, n, temperature, method = "vot", null = "YES", verbose = False, dryrun = True, pre_stored_file=None):
         # IMPORTANT: Always call the parent class to initialize the C++ object.
         IndependenceTest.__init__(self)
         self.data = data
         self.model = model
         self.n = n
         self.temperature = temperature
+        self.method = method
+        self.null = null
         self.verbose = verbose
+        self.dryrun = dryrun
         # extract variable names from data dictionary
         self.variables = [var['name'] for var in self.data['variables']]
         self.pre_stored_file = pre_stored_file
@@ -672,23 +694,40 @@ class GPTIndependenceTest(IndependenceTest):
             # union of both dataframes
             row = pd.concat([rowXY, rowYX])
 
-            if len(row) > 1:
-                print(f"Warning: more than one row found in pre-stored file for statement {x} indep {y} given {z}. Average output reponse.")
+            if len(row) >= 1:
+                if len(row) > 1:
+                    print(f"Warning: more than one row found in pre-stored file for statement {x} indep {y} given {z}. Average output reponse.")
                 # TODO: Discuss what to prefer in case of 0.5
-                if row['n_no'].sum() >= row['n_yes'].sum():
-                    # NO wins voting, not independent, significant evidence against conditional independence
-                    return 0
-                else:
-                    # YES wins voting, independent, or rather no significant evidence against conditional independence
-                    return 1
 
-            if len(row) == 1:
-                if (row['pred'].values)[0] == 'NO':
-                    return 0
-                else:
-                    return 1
-            print(f"Warning: No row found in pre-stored file for statement {x} indep {y} given {z}. Ask Chat GPT.")
+                n_no = row['n_no'].sum()
+                n_yes = row['n_yes'].sum()
+                nn = row['n'].sum()
+                
+                if self.method == "stat":
+                    answ, pval = test_prop(n_no, n_yes, nn, null = self.null, alpha = 0.05)
+                    if answ == "NO":
+                        return 0
+                    if answ == "YES":
+                        return 1
 
+                if self.method == "vot":
+                    if n_no > n_yes:
+                        # NO wins voting, not independent, significant evidence against conditional independence
+                        return 0
+                    if n_yes >  n_no:
+                        # YES wins voting, independent, or rather no significant evidence against conditional independence
+                        return 1
+                    if n_yes == n_no:
+                        if self.null == "YES":
+                            return 1
+                        if self.null == "NO":
+                            return 0
+
+                if self.method == "wvot":
+                    return 0
+                    ##TODO
+
+        print(f"Warning: No row found in pre-stored file for statement {x} indep {y} given {z}. Ask Chat GPT.")
         # If there are no pre-stored results, ask Chat GPT.
         results = gpt_ci_sync(x, y, z, self.data,
                                 model=self.model,
@@ -698,8 +737,33 @@ class GPTIndependenceTest(IndependenceTest):
                                 instruction = INST3, 
                                 response_template = RSPTMPL2,
                                 tryagain=True,
-                                dryrun= False)
-        if results[0]['pred'] == 'NO':
+                                tdelay=0,
+                                dryrun= self.dryrun)
+
+        n_no = results[0]['n_no']
+        n_yes = results[0]['n_yes']
+        nn = results[0]['n']
+
+        if self.method == "stat":
+            answ, pval = test_prop(n_no, n_yes, nn, null = self.null, alpha = 0.05)
+            if answ == "NO":
+                return 0
+            if answ == "YES":
+                return 1
+
+        if self.method == "vot":
+            if n_no > n_yes:
+                # NO wins voting, not independent, significant evidence against conditional independence
+                return 0
+            if n_yes >  n_no:
+                # YES wins voting, independent, or rather no significant evidence against conditional independence
+                return 1
+            if n_yes == n_no:
+                if self.null == "YES":
+                    return 1
+                if self.null == "NO":
+                    return 0
+
+        if self.method == "wvot":
             return 0
-        else:
-            return 1
+            ##TODO

@@ -20,7 +20,6 @@ import ast
 import matplotlib.pyplot as plt
 
 
-
 def main():
     import argparse
     import openai
@@ -35,6 +34,9 @@ def main():
     parser.add_argument("--n", type=int, default=10, help="number of answer requested from model [%(default)s]")
     parser.add_argument("--temperature", type=float, default=None, help="temperature for the model [%(default)s]")
     parser.add_argument("--out", type=str, default=None, help="if not None, the directory name where to save results [%(default)s]")
+    parser.add_argument("--method", type=str, default='vot', help='method used to make decision either vot, wvot or stat')
+    parser.add_argument("--null", type=str, default='YES', help='null hypth either YES or NO')
+    parser.add_argument("--dryrun", action="store_true", default = False, help="this option will not actually call the api")
     # add argument that is either a file name or None
     parser.add_argument("--pre_stored_file", type=str, default=None, help="if not None, the file name where to load pre-stored results [%(default)s]")
     
@@ -56,9 +58,9 @@ def main():
     else:
         pre_stored_file = None
     
-    gptcit = GPTIndependenceTest(data, args.model, args.n, args.temperature, verbose=False, pre_stored_file=pre_stored_file)
+    gptcit = GPTIndependenceTest(data, args.model, args.n, args.temperature, method = args.method, null = args.null, dryrun = args.dryrun, verbose=False, pre_stored_file=pre_stored_file)
     pc = PC()
-    graph = pc.estimate(gptcit, verbose=True)
+    graph = pc.estimate(gptcit, verbose=True, allow_bidirected = False)
     print(graph)
     print(graph.nodes()) 
     
@@ -69,15 +71,12 @@ def main():
         # Add GT for comparison
         os.makedirs(args.out, exist_ok=True)
         arcs = [(data['graph'][i]['from'], data['graph'][i]['to']) for i in range(len(data['graph']))]
-        dag_GT = DAG(arcs)
-        #print(arcs)
-        dag_GT_vis = dag_GT.to_daft()
-        dag_GT_vis.savefig(args.out + '/graph_GT.png')
+
         with open(args.out + '/graph_GT.txt', 'w') as f:
-            f.write(str(set(arcs)))
+            f.write(f"arcs: {arcs}")
 
         with open(args.out + '/graph.txt', 'w') as f:
-            f.write(str(set(graph.arcs())))
+            f.write(f"arcs: {graph.arcs()}\nedges: {graph.edges()}")
         #dag_vis.savefig(args.out + '/graph.png')
 
 
