@@ -1,26 +1,23 @@
 Context: "The Horn of Africa has witnessed a concerning rise in acute food insecurity, affecting 65 million
 people in 2022. Prolonged dry spells significantly contribute to this crisis. Various other factors, including hydrological conditions, food production capabilities, market access, insufficient humanitarian aid, conflicts, and displacement, contribute to the complex challenges households face. In this context, communities that rely solely on rainfall for their livelihoods are especially at risk, often requiring immediate humanitarian assistance to survive." 
-
 variables:
  - name: ENSO
-   description: "El Nino Southern Oscillation - To account for climate
-variability we collect data on ENSO from the World Meteorological Organization (WMO). ENSO phases are then categorized according to the Oceanic El Niño Index
-(ONI), which is based on a 3-month running mean of Sea Surface Temperature (SST) anomaly in the Niño 3.4 region, considered to be the most sensitive region to fluctuations, duration, and magnitude of ENSO events."
+   description: "El Nino Southern Oscillation - To account for climate variability we collect data on ENSO from the World Meteorological Organization (WMO). ENSO phases are then categorized according to the Oceanic El Niño Index (ONI), which is based on a 3-month running mean of Sea Surface Temperature (SST) anomaly in the Niño 3.4 region, considered to be the most sensitive region to fluctuations, duration, and magnitude of ENSO events."
  - name: P
-   description: "Precipitation - P - Use the Standardized Precipitation Index (SPI) to characterize dry spells"
+   description: "Precipitation - Standardized Precipitation Index to characterize dry spells"
  - name: VC
-   description: "Violent Conflict - VC - Proxy based on recorded fatalities"
- - name:
-   description: "Local Market Prices - LMP - monthly market prices of livestock, staple food, and water"
+   description: "Violent Conflict - Proxy based on recorded fatalities"
+ - name: LMP
+   description: "Local Market Prices - monthly market prices of livestock, staple food, and water"
  - name: Y
-   description: "Yield - Y - Shorghum yield production"
+   description: "Yield - Shorghum yield production"
  - name: DD
-   description: "Drought Displacement - DD - Drought-induced internal displacement."
+   description: "Drought Displacement - Drought-induced internal displacement."
  - name: SD
-   description: "Somalia Districts - SD"
+   description: "Somalia Districts"
  - name: POP
-   description: "Population - POP - Population of Somalian districts."
+   description: "Population - Population of Somalian districts."
  - name: RC
-   description: "Received Cash - RC - Number of individuals that received cash."
+   description: "Received Cash - Number of individuals that received cash."
  - name: GAM
-   description: "Global Acute Malnutrition - GAM - Proxy of food insecurity."
+   description: "Global Acute Malnutrition - Proxy of food insecurity."
