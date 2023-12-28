@@ -165,3 +165,12 @@ cython_debug/
 
 
 *.csv
+
+# ignore content of results and testing but keep the folder for git
+results/*
+!results/.gitkeep
+
+testing/*
+!testing/.gitkeep
+
+.vscode/
