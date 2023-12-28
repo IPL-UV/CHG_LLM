@@ -1,0 +1,82 @@
+variables: 
+  - name: Ba
+    description: "whether the ball is in mortion or not"
+  - name : C
+    description : "whether the little car is in motion or not"
+  - name : D
+    description : "whether the Domino fell or not"
+  - name : M
+    description : "whether the mikado stick fell or not"
+  - name : Be
+    description : "whether the bell rang or not"
+  - name : S
+    description : "whether the switch was activated or not"
+  - name : L
+    description : "whether the light was turned on or not"
+context: "Objects that are linked together in a probabilistic Rube Goldberg machine. If the ball is set in motion, it always hits the domino and makes it fall. 
+          If the little car is set in motion it only sometimes hits the domino and makes it fall. 
+          If the little car is set in motion it always hits the mikado stick. 
+          If the mikado stick is hit, it always falls and sometimes hits a bell which than rings. 
+          If the domino falls it always hits the bell and makes it ring. 
+          If the domino falls it also always hits a switch and activates it. 
+          If the switch is activated the light is turned on.
+          The little car and the Ball can be set in to motion completely independently.
+          There are no other possible ways in which the objects can directly interact than the mentioned ones."
+field: "causality"
+graph:
+  - from: Ba
+    to: D
+  - from: C
+    to: M
+  - from: C
+    to: D
+  - from: D
+    to: Be
+  - from: M
+    to: Be
+  - from: D
+    to: S
+  - from: S
+    to: L
+
+ci-statements:
+  - x: Ba
+    y: C
+    z: 
+      - D
+    answ: "NO"
+    comment: "collider"
+  - x: Ba
+    y: Be
+    z:
+      - D
+    answ: "NO"
+    comment: "controll for mediator but also collider"
+  - x: D
+    y: M
+    z: 
+      - C
+    answ: "YES"
+    comment: "controll for common parent"
+  - x: D
+    y: M
+    z: null
+    answ: "NO"
+    comment: "uncontrolled common parent"
+  - x: Ba
+    y: M
+    z: null
+    answ: "YES"
+    comment: "nothing to do"
+  - x: Ba
+    y: M
+    z: 
+      - S
+    answ: "YES"
+    comment: "nothing to do"
+  - x: Ba
+    y: C
+    z: 
+      - L
+    answ: "NO"
+    comment: "child of collider"
