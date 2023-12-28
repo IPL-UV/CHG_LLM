@@ -1,0 +1,22 @@
+variables:
+  - name: spending
+    description: US spending on science, space, and technology
+  - name: suicides
+    description: Suicides by hanging, strangulation and suffocation
+  - name: pool 
+    description: number of people who drowned by falling into a pool per year 
+  - name: cage
+    description: number of films Nicolas Cage appeared in per year 
+  - name: cheese
+    description: per capita cheese consumption
+  - name: bed
+    description: number of people who died by becoming tangled in their bedsheet
+ci-statements:
+  - x: spending
+    y: suicides
+    z: Null
+    answ: "NO"
+  - x: pool
+    y: cage
+    z: Null
+    answ: "NO"

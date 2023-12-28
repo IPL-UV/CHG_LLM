@@ -1,0 +1,61 @@
+variables: 
+  - name : SMK
+    description : "average amount of tobacco smoked per day" 
+  - name : LC
+    description : "if suffering from lung cancer or not" 
+  - name : FH
+    description : "if lung cancer is present in the family medical history" 
+  - name : PN
+    description : "if suffering from pneumonia or not" 
+context: "Variables observed at individual level in a homogeneous population" 
+field: "medical science"  
+ci-statements:
+  - x: SMK
+    y: LC
+    z: null
+    answ: "NO"
+    comment: null
+  - x: LC
+    y: FH
+    z: null
+    answ: "NO"
+    comment: null
+  - x: LC
+    y: SMK
+    z: 
+      - FH
+    answ: "NO"
+    comment: null
+  - x: FH
+    y: PN 
+    z: null
+    answ: "NO"
+    comment: null
+  - x: FH
+    y: SMK
+    z: 
+      - LC
+    answ: "NO"
+    comment: "collider"
+  - x: FH
+    y: PN
+    z: 
+      - LC
+    answ: "NO"
+    comment: "mediator and collider"
+  - x: FH
+    y: PN
+    z: 
+      - LC
+      - SMK
+    answ: "YES"
+    comment: "causal parents blocked"
+graph:
+  - from: SMK
+    to: LC
+  - from: FH
+    to: LC
+  - from: LC
+    to: PN
+  - from: SMK
+    to: PN

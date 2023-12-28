@@ -1,0 +1,25 @@
+reference: "K. B. Korb, A. E. Nicholson. Bayesian Artificial Intelligence, 2nd edition, Section 2.5.1. CRC Press, 2010."
+field: NULL
+variables:
+  - name: burglary
+    description: "If a burglary in the house happened."
+  - name: earthquake
+    description: "If an earthquake happened."
+  - name: alarm
+    description: "If the alarm is ringing."
+  - name: johncalls
+    description: "Binary variable indicating if John has called."
+  - name: marycalls
+    description: "Binary variable indicating if Mary has called."
+context: "Model factors influencing the probability of a burglary in a specific house.
+          John and Mary are two neighbour.
+          John sometimes confuses the alarm with the phone ringing and Mary likes loud music and sometimes doesn’t hear the alarm."
+graph:
+  - from: burglary
+    to: alarm
+  - from: earthquake
+    to: alarm
+  - from: alarm
+    to: johncalls
+  - from: alarm
+    to: marycalls

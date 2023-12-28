@@ -1,0 +1,21 @@
+variables:
+  - name: pollution
+    description: ""
+  - name: smoker
+    description: ""
+  - name: cancer
+    description: ""
+  - name: xray
+    description: ""
+  - name: dyspnoea
+context: ""
+field: "medicine"
+graph:
+  - from: pollution
+    to: cancer
+  - from: smoker
+    to: cancer
+  - from: cancer
+    to: xray
+  - from: cancer
+    to: dyspnoea

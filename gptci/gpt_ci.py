@@ -17,14 +17,6 @@ INST0 = ("When asked to provide estimates and "
         "you will answer with your best guess based "
         "on the knowledge you have access to.")
 
-INST1 = ("You will be asked to provide your estimate and confidence "
-        "on statistical independence between two variables "
-        "(eventually conditioned on a set of variables).\n"
-        "Your answer should not be based on data or observations, "
-        "but only on the available knowledge.\n"
-        "Even when unsure or uncertain, provide a valid answer and uncertainty.\n"
-        "Answer only in the required format.\n")
-
 INSTCAUSAL = ("You will be asked to provide your estimate and confidence "
         "on the direct causal link  between two variables "
         "(eventually conditioned on a set of variables)."
@@ -32,6 +24,14 @@ INSTCAUSAL = ("You will be asked to provide your estimate and confidence "
         "but only on the available knowledge.\n"
         "Even when unsure or uncertain, provide a valid answer and uncertainty."
         "Answer only in the required format. ")
+
+INST1 = ("You will be asked to provide your estimate and confidence "
+        "on statistical independence between two variables "
+        "(eventually conditioned on a set of variables).\n"
+        "Your answer should not be based on data or observations, "
+        "but only on the available knowledge.\n"
+        "Even when unsure or uncertain, provide a valid answer and uncertainty.\n"
+        "Answer only in the required format.\n")
 
 INST2 = ("You will be asked to provide your estimate and confidence "
         "on statistical independence between two variables "
@@ -48,16 +48,16 @@ INST3 = ("You will be asked to provide your best guess and your uncertainty "
         "and the probability that your guess is correct.\n"
         "Answer only in the required format.\n")
 
-cond = 'conditionally '
+cond = ""#'conditionally '
 
 QINDEP = "is {x} independent of {y} ?"
-QCINDEP = "is {x} {cond}independent of {y} conditioned on {z} ?"
+QCINDEP = "is {x} independent of {y} conditioned on {z} ?"
 
 INDEP = "{x} is independent of {y}"
-CINDEP = "{x} is {cond}independent of {y} conditioned on {z}"
+CINDEP = "{x} is independent of {y} conditioned on {z}"
 
 DEP = "{x} is not independent of {y}"
-CDEP = "{x} is not {cond}independent of {y} conditioned on {z}"
+CDEP = "{x} is not independent of {y} conditioned on {z}"
 
 DEP3 = "{x} and {y} are dependent"
 CDEP3 = "{x} and {y} are dependent conditioned on {z}"
@@ -77,7 +77,7 @@ RSPTMPL1 = ("After explaining your reasoning, "
             "Where YES stands for \"{ci}\" and NO stands for \"{noci}\".\n" 
             "For example [NO (50%)] or [YES (50%)].")
 
-RSPTMPL2 = ("Work out the answer in a step-by-step way to be as "
+RSPTMPL = ("Work out the answer in a step-by-step way to be as "
             "sure as possible that you have the right answer."
             "After explaining your reasoning, "
             "provide the answer in the following form: "
@@ -86,7 +86,7 @@ RSPTMPL2 = ("Work out the answer in a step-by-step way to be as "
             "YES stands for \"{ci}\" and NO stands for \"{noci}\".\n"
             "For example [NO (50%)] or [YES (50%)].")
 
-RSPTMPL3 = ("Work out the answer in a step-by-step way to be as "
+RSPTMPL = ("Work out the answer in a step-by-step way to be as "
             "sure as possible that you have the right answer."
             "After explaining your reasoning, "
             "provide the answer in the following form: "
@@ -124,6 +124,87 @@ RSPTMPL3 = ("Work out the answer in a step-by-step way to be as "
             "leads to a spurious correlation between X and Y. Given Z there seems to be an information flow between X and Y."
             "Based on this reasoning, we can conclude:\n\n[NO (80%)]"
             )
+
+RSPTMPL = ("Work out the answer in a step-by-step way to be as "
+            "sure as possible that you have the right answer and that you respect the "
+            "principles conditional independence testing in causality."
+            "After explaining your reasoning, "
+            "provide the answer in the following form: "
+            "[<ANSWER> (<PROBABILITY>)] where ANSWER is either YES or NO "
+            "and PROBABILITY is a percentage between 0% and 100%."
+            "YES stands for \"{ci}\" and NO stands for \"{noci}\".\n"
+            "For example [NO (50%)] or [YES (50%)].\n"
+            "Principles of conditional independence testing:\n"
+            "1. Identify and account for all variables that are direct causes" 
+            "or common causes of the variables being tested for conditional independence\n"
+            "2. Utilize a reliable causal inference method, such as the backdoor criterion" 
+            "or frontdoor criterion, to ensure proper adjustment for confounding variables" 
+            "and establish conditional independence relationships.\n"
+            "3. Be cautious of collider variables, as conditioning on them may"
+            "induce spurious associations, and consider the underlying causal structure" 
+            "when interpreting the results of conditional independence tests in the context of a causal graph.\n"
+            )
+
+RSPTMPL = ("Work out the answer in a step-by-step way to be as "
+            "sure as possible that you have the right answer."
+            "After explaining your reasoning, "
+            "provide the answer in the following form: "
+            "[<ANSWER> (<PROBABILITY>)] where ANSWER is either YES or NO "
+            "and PROBABILITY is a percentage between 0% and 100%."
+            "YES stands for \"{ci}\" and NO stands for \"{noci}\".\n"
+            "For example [NO (50%)] or [YES (50%)].\n"
+            "Principles of conditional independence testing:\n"
+            "1. Identify and account for all observed variables that are direct causes" 
+            "or common causes of the variables being tested for conditional independence"
+            "2. Utilize a reliable causal inference method, such as the backdoor criterion" 
+            "or frontdoor criterion, to ensure proper adjustment for confounding variables" 
+            "and establish conditional independence relationships."
+            "3. Be cautious of collider variables, as conditioning on them may"
+            "induce spurious associations, and consider the underlying causal structure" 
+            "when interpreting the results of conditional independence tests in the context of a causal graph."
+            "Here are three examples:\n"
+            "First example:\n"
+            "To determine if ice cream sales (X) is conditionally independent of drowning incidents (Y)"
+            "given [temperature (Z)], we need to consider if knowing Z makes X and Y carry information about the"
+            "occurance of each other. There is a known correlation between ice cream sales and "
+            "drowning incidents. However, we have reason to believe that temperature is a confounder "
+            "that explains both X and Y. For example, higher temperatures may lead to both "
+            "increased ice cream sales and more people going to the beach, "
+            "increasing the likelihood of drowning incidents. "
+            "This means that, for a given temperature, the occurrence or non-occurrence of drowning "
+            "incidents likely doesn't provide any additional information about ice cream sales beyond "
+            "what is already known from the temperature."
+            "Based on this reasoning, we can conclude:\n\n[YES (85%)]\n\n"
+            "Second example:\n"
+            "To determine if ice cream sales (X) is independent of drowning incidents (Y), "
+            "we need to consider if X and Y carry information about the"
+            "occurance of each other. There is a known correlation between ice cream sales and "
+            "drowning incidents."
+            "ice cream sales tend to increase at the same time as drowning incidents."
+            "Based on this reasoning, we can conclude:\n\n[NO (90%)]\n\n"
+            "Third example:\n"
+            "To determine if hours of sleep (X) is conditionally independent of academic performance (Y) "
+            "given [extracurricular activities (Z)], we need to consider if knowing Z makes X and Y carry information about the"
+            "occurance of each other. There is no known or only very weak correlation between X and "
+            "Y. However, Students who perform well academically tend to engage in more extracurricular activities."
+            "Students who get more sleep tend to engage in fewer extracurricular activities."
+            "Z is influenced by both X and Y. If we take a student with a lot of extracurricular activities "
+            "a good academic performance probably goes hand in hand with few hours of sleep. Conditioning on Z therefore "
+            "leads to a spurious correlation between X and Y. Given Z there seems to be an information flow between X and Y."
+            "Based on this reasoning, we can conclude:\n\n[NO (80%)]"
+            )
+
+RSPTMPL2 = ( "First, take a step back: Think about the bigger picture and name all colliders,"
+            " the children of colliders, common causes or mediators that "
+            "need to be taken into account to answer the question. "
+            "Then work out the answer in a step-by-step way to be as "
+            "sure as possible that you have the right answer."
+            "After explaining your reasoning, "
+            "provide the answer in the following form: "
+            "[<ANSWER> (<PROBABILITY>)] where ANSWER is either YES or NO "
+            "and PROBABILITY is a percentage between 0% and 100%."
+            "YES stands for \"{ci}\" and NO stands for \"{noci}\".\n"
+            "For example [NO (50%)] or [YES (50%)].")
 
 #NO = '\[NO \(\d{1,3}\%\)\]'
 NO = '\[\s*NO.*\]'
@@ -632,6 +713,7 @@ def gpt_ci_list(cis, data=None, temperature=None, model="gpt-3.5-turbo-instruct"
         results[choice.index] = choice.text 
     
     return [(parse_response(res), res) for res in results]
+
 
 def test_prop(n_no, n_yes, n, null = "YES", alpha = 0.05):
     p_no = n_no / n # prop of no
