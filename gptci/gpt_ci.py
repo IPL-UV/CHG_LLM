@@ -51,13 +51,13 @@ INST3 = ("You will be asked to provide your best guess and your uncertainty "
 cond = 'conditionally '
 
 QINDEP = "is {x} independent of {y} ?"
-QCINDEP = "is {x} {cond}independent of {y} conditioned on {z} ?"
+QCINDEP = "is {x} conditionally independent of {y} conditioned on {z} ?"
 
 INDEP = "{x} is independent of {y}"
-CINDEP = "{x} is {cond}independent of {y} conditioned on {z}"
+CINDEP = "{x} is conditionally independent of {y} conditioned on {z}"
 
 DEP = "{x} is not independent of {y}"
-CDEP = "{x} is not {cond}independent of {y} conditioned on {z}"
+CDEP = "{x} is not conditionally independent of {y} conditioned on {z}"
 
 DEP3 = "{x} and {y} are dependent"
 CDEP3 = "{x} and {y} are dependent conditioned on {z}"
@@ -767,3 +767,89 @@ class GPTIndependenceTest(IndependenceTest):
         if self.method == "wvot":
             return 0
             ##TODO
+
+class HybridGPTIndependenceTest(IndependenceTest):
+    def __init__(self, data_info, pre_stored_file, gpt_variables = None, data_driven_test=None, method = "vot", null = "YES", test_list=None):
+        # IMPORTANT: Always call the parent class to initialize the C++ object.
+        IndependenceTest.__init__(self)
+        self.data_info = data_info
+        self.null = null
+        self.data_driven_test = data_driven_test
+        self.gpt_variables = gpt_variables
+        self.test_list = []
+        self.method=method
+        
+        # extract variable names from data dictionary
+        self.variables = [var['name'] for var in self.data_info['variables']]
+        self.pre_stored_file = pre_stored_file
+        self.current_level = -1 # value for level-wise increase with gpt queries
+            
+    def num_variables(self):
+        return len(self.variables)
+
+    def variable_names(self):
+        return self.variables
+
+    def has_variables(self, vars):
+        return set(vars).issubset(set(self.variables))
+
+    def name(self, index):
+        return self.variables[index]
+
+    def pvalue(self, x, y, z):
+        # Make sure that z is a list
+        if isinstance(z, str):
+            z = [z]
+        if z is None:
+            z = []
+        
+        # check if one of the strings in x+y+z is in gpt_variables
+        if len(set(z+[x]+[y]) & set(self.gpt_variables)) > 0:        
+            
+            rowXY = self.pre_stored_file.loc[(self.pre_stored_file['x'] == x) & (self.pre_stored_file['y'] == y) & (np.array([set(Z) for Z in self.pre_stored_file['z']]) ==set(z))]
+            rowYX = self.pre_stored_file.loc[(self.pre_stored_file['y'] == x) & (self.pre_stored_file['x'] == y) & (np.array([set(Z) for Z in self.pre_stored_file['z']]) ==set(z))]
+            # union of both dataframes
+            row = pd.concat([rowXY, rowYX])
+
+            if len(row) >= 1:
+                if len(row) > 1:
+                    print(f"Warning: more than one row found in pre-stored file for statement {x} indep {y} given {z}. Average output reponse.")
+        
+                n_no = row['n_no'].sum()
+                n_yes = row['n_yes'].sum()
+                nn = row['n'].sum()
+                
+                if self.method == "stat":
+                    answ, pval = test_prop(n_no, n_yes, nn, null = self.null, alpha = 0.05)
+                    if answ == "NO":
+                        return 0
+                    if answ == "YES":
+                        return 1
+
+                if self.method == "vot":
+                    if n_no > n_yes:
+                        # NO wins voting, not independent, significant evidence against conditional independence
+                        return 0
+                    if n_yes >  n_no:
+                        # YES wins voting, independent, or rather no significant evidence against conditional independence
+                        return 1
+                    if n_yes == n_no:
+                        if self.null == "YES":
+                            return 1
+                        if self.null == "NO":
+                            return 0
+
+                if self.method == "wvot":
+                    return 0
+                    ##TODO
+                        
+            if row.empty:
+                if self.current_level != -1 and len(z) > self.current_level:
+                    return 1
+                else:
+                    self.test_list.append({'x': x, 'y': y, "z": z})     
+                    self.current_level = len(z)
+                    return 0
+        else:
+            return self.data_driven_test.pvalue(x,y,z)
+            
