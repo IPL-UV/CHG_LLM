@@ -10,7 +10,7 @@ variables:
  - name: LMP
    description: "Local Market Prices - monthly market prices of livestock, staple food, and water"
  - name: Y
-   description: "Yield - Shorghum yield production"
+   description: "Yield - Shorghum yield production" -> Crop production.
  - name: DD
    description: "Drought Displacement - Drought-induced internal displacement."
  - name: SD
