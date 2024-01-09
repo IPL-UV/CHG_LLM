@@ -77,7 +77,10 @@ RSPTMPL1 = ("After explaining your reasoning, "
             "Where YES stands for \"{ci}\" and NO stands for \"{noci}\".\n" 
             "For example [NO (50%)] or [YES (50%)].")
 
-RSPTMPL2 = ("Work out the answer in a step-by-step way to be as "
+RSPTMPL2 = ( "First, take a step back: Think about the bigger picture and name all colliders,"
+            " the children of colliders, common causes or mediators that "
+            "need to be taken into account to answer the question. "
+            "Then work out the answer in a step-by-step way to be as "
             "sure as possible that you have the right answer."
             "After explaining your reasoning, "
             "provide the answer in the following form: "
@@ -87,6 +90,15 @@ RSPTMPL2 = ("Work out the answer in a step-by-step way to be as "
             "For example [NO (50%)] or [YES (50%)].")
 
 RSPTMPL3 = ("Work out the answer in a step-by-step way to be as "
+            "sure as possible that you have the right answer."
+            "After explaining your reasoning, "
+            "provide the answer in the following form: "
+            "[<ANSWER> (<PROBABILITY>)] where ANSWER is either YES or NO "
+            "and PROBABILITY is a percentage between 0% and 100%."
+            "YES stands for \"{ci}\" and NO stands for \"{noci}\".\n"
+            "For example [NO (50%)] or [YES (50%)].")
+
+RSPTMPL4 = ("Work out the answer in a step-by-step way to be as "
             "sure as possible that you have the right answer."
             "After explaining your reasoning, "
             "provide the answer in the following form: "
