@@ -1,0 +1,26 @@
+context: "Variables are considered at the level of Somalian districts."
+variables:
+- name: enso
+  description: "El Nino Southern Oscillation."
+- name: spi
+  description: "Indicator of dry spells."
+- name: armed_conflicts
+  description: "Armed conflicts within the Somalian district."
+- name: food_prices
+  description: "Market prices of staple food in the district."
+- name: livestock_prices
+  description: "Market prices of livestock in the district."
+- name: water_prices
+  description: "Market prices of water in the district."
+- name: yield
+  description: "Production of staple crops in the district."
+- name: internal_displacement
+  description: "Drought-induced internal human displacement or mobility for the considered district."
+- name: population
+  description: "Population size of a Somalian district under consideration."
+- name: received_cash
+  description: "Cash received via credit or remittances in the district, within the context of humanitarian aid."
+- name: malnutrition
+  description: "Overall acute malnutrition of the population in the district."
+
+
