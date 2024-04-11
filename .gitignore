@@ -166,11 +166,13 @@ cython_debug/
 
 *.csv
 
-# ignore content of results but keep the folder for git
+# ignore content of results and testing but keep the folder for git
 results/*
 !results/.gitkeep
 
 testing/*
 !testing/.gitkeep
 
-.vscode/
+scripts/test copy.ipynb
+scripts/test.ipynb
+gptci/gpt_ci2.py

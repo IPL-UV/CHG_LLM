@@ -16,9 +16,9 @@ from gptci import *
 import numpy as np
 import pandas as pd
 import ast
-
+from time import sleep
 import matplotlib.pyplot as plt
-
+from tqdm.asyncio import tqdm_asyncio
 
 def main():
     import argparse
@@ -70,10 +70,10 @@ def main():
     if args.out is not None:
         # Add GT for comparison
         os.makedirs(args.out, exist_ok=True)
-        arcs = [(data['graph'][i]['from'], data['graph'][i]['to']) for i in range(len(data['graph']))]
+        #arcs = [(data['graph'][i]['from'], data['graph'][i]['to']) for i in range(len(data['graph']))]
 
-        with open(args.out + '/graph_GT.txt', 'w') as f:
-            f.write(f"arcs: {arcs}")
+        #with open(args.out + '/graph_GT.txt', 'w') as f:
+        #    f.write(f"arcs: {arcs}")
 
         with open(args.out + '/graph.txt', 'w') as f:
             f.write(f"arcs: {graph.arcs()}\nedges: {graph.edges()}")

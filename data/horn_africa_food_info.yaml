@@ -1,23 +1,25 @@
-Context: "The Horn of Africa has witnessed a concerning rise in acute food insecurity, affecting 65 million
+context: "The Horn of Africa has witnessed a concerning rise in acute food insecurity, affecting 65 million
 people in 2022. Prolonged dry spells significantly contribute to this crisis. Various other factors, including hydrological conditions, food production capabilities, market access, insufficient humanitarian aid, conflicts, and displacement, contribute to the complex challenges households face. In this context, communities that rely solely on rainfall for their livelihoods are especially at risk, often requiring immediate humanitarian assistance to survive." 
 variables:
- - name: ENSO
+ - name: enso
    description: "El Nino Southern Oscillation"
- - name: P
+ - name: spi
    description: "Precipitation - Standardized Precipitation Index to characterize dry spells"
- - name: VC
+ - name: fatalities
    description: "Armed Conflict"
- - name: LMP
-   description: "Local Market Prices - monthly market prices of livestock, staple food, and water"
- - name: Y
-   description: "Yield - Shorghum yield production" -> Crop production.
- - name: DD
+ - name: food_prices
+   description: "Market prices of staple food"
+ - name: livestock_prices
+   description: "Market prices of livestock"
+ - name: water_prices
+   description: "Market prices of water"
+ - name: yield
+   description: "Yield - Food production"
+ - name: idp_drought
    description: "Drought Displacement - Drought-induced internal displacement."
- - name: SD
-   description: "Somalia Districts"
- - name: POP
-   description: "Population - Population of Somalian districts."
- - name: RC
+ - name: population
+   description: "Population - Population size of a Somalian district under consideration."
+ - name: cred_plus_rem_norm
    description: "Received Cash - Number of individuals that received cash via credit or remittances."
- - name: GAM
+ - name: gam_norm
    description: "Global Acute Malnutrition"
