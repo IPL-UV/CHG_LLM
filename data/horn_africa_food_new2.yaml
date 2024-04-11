@@ -1,0 +1,25 @@
+context: "Here is the general context for the question. The analysis is at the level of Somalian districts and includes only Somalia. Based on the answer to this question, we will generate a causal graph to the food insecurity system in Somalia."
+variables:
+- name: enso
+ description: "El Nino Southern Oscillation."
+- name: spi
+ description: "Dry spells."
+- name: armed_conflicts
+ description: "Armed conflicts within the Somalian district."
+- name: food_prices
+ description: "District market prices of staple food."
+- name: livestock_prices
+ description: "District market prices of livestock."
+- name: water_prices
+ description: "District market prices of water."
+- name: yield
+ description: "District-specific production of staple crops."
+- name: internal_displacement
+ description: "Drought-induced internal human displacement or mobility within Somalia."
+- name: population
+ description: "Population size of a Somalian district under consideration."
+- name: received_cash
+ description: "Received cash via credit or remittances in each district in the context of humanitarian aid."
+- name: malnutrition
+ description: "Overall acute malnutrition of the population in a Somalian district."
+

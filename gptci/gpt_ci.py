@@ -60,7 +60,7 @@ DEP = "{x} is not independent of {y}"
 CDEP = "{x} is not conditionally independent of {y} conditioned on {z}"
 
 DEP3 = "{x} and {y} are dependent"
-CDEP3 = "{x} and {y} are dependent conditioned on {z}"
+CDEP3 = "{x} and {y} are dependent given {z}"
 
 
 
@@ -220,8 +220,15 @@ def voting(x):
 
     noconf = nNO / n 
     yesconf = nYES / n 
+
+    answy, pvaly = test_prop(nNO, nYES, n, null = "YES", alpha = 0.05)
+    answn, pvaln = test_prop(nNO, nYES, n, null = "NO", alpha = 0.05)
     return {"pred" : out,
             "wpred": wout,
+            "stat_yes": answy,
+            "pval_yes": pvaly,
+            "stat_no": answn,
+            "pval_no": pvaln,
             "n_no" : nNO, "n_yes" : nYES, "n" : n,
             "no_conf": noconf,
             "yes_conf": yesconf,
@@ -466,7 +473,7 @@ def gpt_ci_sync(x, y, z=None, data=None,
         print(prompt)
     try:
         if dryrun:
-            if random() > 0.5:
+            if random() > 0:
                 response = {"choices": [{"message": {"content":"[NO (0%)]"}}] * n }
                 results = [res['message']['content'] for res in response['choices']] 
                 parsed = [parse_response(res) for res in results] 
@@ -712,7 +719,7 @@ class GPTIndependenceTest(IndependenceTest):
                 nn = row['n'].sum()
                 
                 if self.method == "stat":
-                    answ, pval = test_prop(n_no, n_yes, nn, null = self.null, alpha = 0.05)
+                    answ, pval = test_prop(n_no, n_yes, nn, null = self.null, alpha = 0.01)
                     if answ == "NO":
                         return 0
                     if answ == "YES":
