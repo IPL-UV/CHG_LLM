@@ -1,0 +1,37 @@
+reference: "S. Lauritzen, D. Spiegelhalter. Local Computation with Probabilities on Graphical Structures and their Application to Expert Systems (with discussion). Journal of the Royal Statistical Society: Series B (Statistical Methodology), 50(2):157-224, 1988. "
+field: "medicine"
+variables: 
+  - name: asia
+    description: "whether the patient has recently visited Asia"
+  - name : tub
+    description : "whether the patient has tuberculosis or not"
+  - name : lung
+    description : "whether the patient has lung cancer or not"
+  - name : smoke
+    description : "whether the patient smokes or not"
+  - name : bronc
+    description : "whether the patient has bronchitis or not"
+  - name : dysp
+    description : "whether the patient is experiencing shortness of breath (dyspnoea) or not"
+  - name: xray
+    description : "Denotes the positive result from a chest X-ray."
+  - name: either
+    description: "whether the patient has either tuberculosis or lung cancer or both"
+context: "Various related modelling factors influencing dyspnoea in a patient at a medical center."
+graph:
+  - from: asia
+    to: tub
+  - from: tub
+    to: either
+  - from: smoke
+    to: lung
+  - from: smoke
+    to: bronc
+  - from: bronc
+    to: dysp
+  - from: lung
+    to: either
+  - from: either
+    to: xray
+  - from: either
+    to: dysp

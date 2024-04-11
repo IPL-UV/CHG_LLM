@@ -1,6 +1,16 @@
 {
   "field": "agriculture",
-  "context": "We have a recommendation system in the form of daily maps over the fields of the farmers of a cooperative in Orchomenos, Greece. The sowing recommendation maps were served through the website of the cooperative that farmers visited on a daily basis. The cooperative collected and provided for each field: its geo-referenced boundaries, the sowing date, the seed variety, the harvest date, the precise final yield, and for a subset of the fields the yield of the previous year. We then combined this data with publicly available observations from heterogeneous sources, such as satellites (Sentinel-2), weather stations and GIS maps, to engineer an observational dataset that enables a causal analysis for studying the impact of the recommendation system on the yield. Agricultural practices prior, during and after sowing are considered to be the same for all fields of the cooperative.",
+  "context": "We have a recommendation system in the form of daily
+              maps over the fields of the farmers of a cooperative in Orchomenos, 
+              Greece. The sowing recommendation maps were served through the 
+              website of the cooperative that farmers visited on a daily basis. 
+              The cooperative collected and provided for each field: 
+              its geo-referenced boundaries, the sowing date, the seed variety, 
+              the harvest date, the precise final yield, and for a subset of the 
+              fields the yield of the previous year. We then combined this data 
+              with publicly available observations from heterogeneous sources, 
+              such as satellites (Sentinel-2), weather stations and GIS maps, 
+              to engineer an observational dataset that enables a causal analysis for studying the impact of the recommendation system on the yield. Agricultural practices prior, during and after sowing are considered to be the same for all fields of the cooperative.",
   "variables": [
     {
       "long_name": "Treatment",

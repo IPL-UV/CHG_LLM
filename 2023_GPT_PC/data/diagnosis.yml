@@ -1,0 +1,42 @@
+variables:  
+  - name: FF
+    description: "whether the person eats fatty foods on a regular basis or not"
+  - name : A
+    description : "whether the person has arteriosclerosis or not" 
+  - name : RHS
+    description : "whether the person has right heart syndrome or not"
+  - name : LHS
+    description : "whether the person has left heart syndrome or not"
+  - name : LSF
+    description : "whether the person's lungs sound funny or not"
+  - name : DB
+    description : "whether the person has difficulty breathing or not"
+  - name: CUB
+    description : "whether the person coughs up blood or not"
+  - name: S
+    description: "whether the person smokes or not"
+  - name: R
+    description: "whether the person is exposed to radon or not"
+  - name: LC
+    description: "whether the person has lung cancer or not"
+context: "Variables observed at individual level in a homogeneous population" 
+field: "medicine"
+graph:
+  - from: FF
+    to: A
+  - from: A
+    to: RHS
+  - from: A
+    to: LHS
+  - from: S
+    to: LC
+  - from: R
+    to: LC
+  - from: LC
+    to: CUB
+  - from: LC
+    to: DB
+  - from: LHS
+    to: DB
+  - from: LHS
+    to: LSF
