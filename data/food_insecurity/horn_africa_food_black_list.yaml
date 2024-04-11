@@ -1,0 +1,57 @@
+- !!python/tuple
+  - spi
+  - enso
+- !!python/tuple
+  - fatalities
+  - enso
+- !!python/tuple
+  - food_prices
+  - enso
+- !!python/tuple
+  - livestock_prices
+  - enso
+- !!python/tuple
+  - water_prices
+  - enso
+- !!python/tuple
+  - sorghum_production
+  - enso
+- !!python/tuple
+  - idp_drought
+  - enso
+- !!python/tuple
+  - population
+  - enso
+- !!python/tuple
+  - cred_plus_rem_norm
+  - enso
+- !!python/tuple
+  - gam_norm
+  - enso
+- !!python/tuple
+  - fatalities
+  - spi
+- !!python/tuple
+  - food_prices
+  - spi
+- !!python/tuple
+  - livestock_prices
+  - spi
+- !!python/tuple
+  - water_prices
+  - spi
+- !!python/tuple
+  - sorghum_production
+  - spi
+- !!python/tuple
+  - idp_drought
+  - spi
+- !!python/tuple
+  - population
+  - spi
+- !!python/tuple
+  - cred_plus_rem_norm
+  - spi
+- !!python/tuple
+  - gam_norm
+  - spi

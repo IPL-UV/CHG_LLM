@@ -43,7 +43,7 @@ INST3 = ("You will be asked to provide your best guess and your uncertainty "
         "on the statistical independence between two variables "
         "potentially conditioned on a set of variables.\n"
         "Your answer should not be based on data or observations, "
-        "but only on the available knowledge.\n"
+        "but only on knowledge. The knowledge should go beyond the given context.\n"
         "Even when unsure or uncertain, provide your best guess (YES or NO) "
         "and the probability that your guess is correct.\n"
         "Answer only in the required format.\n")
@@ -51,13 +51,13 @@ INST3 = ("You will be asked to provide your best guess and your uncertainty "
 cond = 'conditionally '
 
 QINDEP = "is {x} independent of {y} ?"
-QCINDEP = "is {x} independent of {y} given {z} ?"
+QCINDEP = "is {x} conditionally independent of {y} conditioned on {z} ?"
 
 INDEP = "{x} is independent of {y}"
-CINDEP = "{x} is independent of {y} given {z}"
+CINDEP = "{x} is conditionally independent of {y} conditioned on {z}"
 
 DEP = "{x} is not independent of {y}"
-CDEP = "{x} is not independent of {y} given {z}"
+CDEP = "{x} is not conditionally independent of {y} conditioned on {z}"
 
 DEP3 = "{x} and {y} are dependent"
 CDEP3 = "{x} and {y} are dependent given {z}"
@@ -77,7 +77,10 @@ RSPTMPL1 = ("After explaining your reasoning, "
             "Where YES stands for \"{ci}\" and NO stands for \"{noci}\".\n" 
             "For example [NO (50%)] or [YES (50%)].")
 
-RSPTMPL2 = ("Work out the answer in a step-by-step way to be as "
+RSPTMPL2 = ( "First, take a step back: Think about the bigger picture and name all colliders,"
+            " the children of colliders, common causes or mediators that "
+            "need to be taken into account to answer the question. "
+            "Then work out the answer in a step-by-step way to be as "
             "sure as possible that you have the right answer."
             "After explaining your reasoning, "
             "provide the answer in the following form: "
@@ -87,6 +90,15 @@ RSPTMPL2 = ("Work out the answer in a step-by-step way to be as "
             "For example [NO (50%)] or [YES (50%)].")
 
 RSPTMPL3 = ("Work out the answer in a step-by-step way to be as "
+            "sure as possible that you have the right answer."
+            "After explaining your reasoning, "
+            "provide the answer in the following form: "
+            "[<ANSWER> (<PROBABILITY>)] where ANSWER is either YES or NO "
+            "and PROBABILITY is a percentage between 0% and 100%."
+            "YES stands for \"{ci}\" and NO stands for \"{noci}\".\n"
+            "For example [NO (50%)] or [YES (50%)].")
+
+RSPTMPL4 = ("Work out the answer in a step-by-step way to be as "
             "sure as possible that you have the right answer."
             "After explaining your reasoning, "
             "provide the answer in the following form: "
@@ -276,13 +288,11 @@ def get_persona(data=None):
 def get_context(data=None):
     if data is None:
         return ""
-    if data.get('context') is None:
-        return ""
     return data['context']
 
 # this function generate the variables description 
 # It also add the context field at the beginning 
-def get_var_descritpions(data=None, x=None,y=None,z=None):
+def get_var_descriptions(data=None, x=None,y=None,z=None):
     if data is None:
         return "Consider the following variables: {x}, {y} and {z}."
     vs = [v['name'] for v in data['variables']]
@@ -296,15 +306,13 @@ def get_var_descritpions(data=None, x=None,y=None,z=None):
     if z is not None:
         if len(z) > 0:
             vs = vs + z
-    if data.get("context") is None:
-        out = "Consider the following variables:\n"
-    else:
-        out = ("{context}\n"
-                "Consider the following variables:\n").format(**data)
+
+    out = ("{context}\n"
+            "Consider the following system of variables:\n").format(**data)
     for v in data['variables']:
         #out = out + "- {name}: {description}\n".format(**v) 
-        if v['name'] in vs:
-            out = out + "- {name}: {description}\n".format(**v) 
+        #if v['name'] in vs:
+        out = out + "- {name}: {description}\n".format(**v) 
     return out
 
 # this function generate the cis in question format 
@@ -389,7 +397,7 @@ async def gpt_ci(x, y, z=None, data=None,
         if len(y) == 1:
             y = y[0]
     persona = get_persona(data)
-    vdescription = get_var_descritpions(data,x,y,z)
+    vdescription = get_var_descriptions(data,x,y,z)
     qci = get_qci(x,y,z)
     ci = get_ci(x,y,z)
     noci = get_noci(x,y,z)
@@ -405,7 +413,7 @@ async def gpt_ci(x, y, z=None, data=None,
                 results = [res['message']['content'] for res in response['choices']] 
                 parsed = [parse_response(res) for res in results] 
                 voted = voting(parsed)
-                return voted, parsed, results, prompt
+                return voted, parsed, results, prompt, f'{x},{y}|{z}'
             else: 
                 raise Exception("test exception")
         else:
@@ -423,7 +431,7 @@ async def gpt_ci(x, y, z=None, data=None,
             results = [res['message']['content'] for res in response['choices']] 
             parsed = [parse_response(res) for res in results] 
             voted = voting(parsed)
-            return voted, parsed, results, prompt
+            return voted, parsed, results, prompt, f'{x},{y}|{z}'
 
     except Exception as inst:
         print("error from server (likely)")
@@ -454,7 +462,7 @@ def gpt_ci_sync(x, y, z=None, data=None,
         if len(y) == 1:
             y = y[0]
     persona = get_persona(data)
-    vdescription = get_var_descritpions(data,x,y,z)
+    vdescription = get_var_descriptions(data,x,y,z)
     qci = get_qci(x,y,z)
     ci = get_ci(x,y,z)
     noci = get_noci(x,y,z)
@@ -549,7 +557,7 @@ def gpt_causal(x, y, z=None, data=None, temperature=None, model="gpt-3.5-turbo",
 
     persona = get_persona(data)
     context = get_context(data)
-    vdescription = get_var_descritpions(data,x,y,z)
+    vdescription = get_var_descriptions(data,x,y,z)
     ci = get_causal(x,y,z)
     if verbose:
         print(f"persona: {persona}")
@@ -613,7 +621,7 @@ def gpt_ci_list(cis, data=None, temperature=None, model="gpt-3.5-turbo-instruct"
         x = ci['x']
         y = ci['y']
         z = ci['z']
-        vdescription = get_var_descritpions(data, x, y, z)
+        vdescription = get_var_descriptions(data, x, y, z)
         ci = get_qci(x,y,z)
         prompt = persona + "\n"
         prompt = prompt + instruction + "\n"
@@ -774,3 +782,94 @@ class GPTIndependenceTest(IndependenceTest):
         if self.method == "wvot":
             return 0
             ##TODO
+
+class HybridGPTIndependenceTest(IndependenceTest):
+    def __init__(self, data_info, pre_stored_file, gpt_variables = None, data_driven_test=None, method = "vot", null = "YES", test_list=None, dryrun=False, alpha=0.05, max_level=100):
+        # IMPORTANT: Always call the parent class to initialize the C++ object.
+        IndependenceTest.__init__(self)
+        self.data_info = data_info
+        self.null = null
+        self.data_driven_test = data_driven_test
+        self.gpt_variables = gpt_variables
+        self.test_list = []
+        self.method=method
+        self.dryrun=dryrun
+        self.alpha=alpha
+        self.max_level=max_level
+        
+        # extract variable names from data dictionary
+        self.variables = [var['name'] for var in self.data_info['variables']]
+        self.pre_stored_file = pre_stored_file
+        self.current_level = -1 # value for level-wise increase with gpt queries
+            
+    def num_variables(self):
+        return len(self.variables)
+
+    def variable_names(self):
+        return self.variables
+
+    def has_variables(self, vars):
+        return set(vars).issubset(set(self.variables))
+
+    def name(self, index):
+        return self.variables[index]
+
+    def pvalue(self, x, y, z):
+        # Make sure that z is a list
+        if isinstance(z, str):
+            z = [z]
+        if z is None:
+            z = []
+        
+        # check if one of the strings in x+y+z is in gpt_variables
+        if len(set(z+[x]+[y]) & set(self.gpt_variables)) > 0 and len(z) <= self.max_level:       
+            
+            rowXY = self.pre_stored_file.loc[(self.pre_stored_file['x'] == x) & (self.pre_stored_file['y'] == y) & (np.array([set(Z) for Z in self.pre_stored_file['z']]) ==set(z))]
+            rowYX = self.pre_stored_file.loc[(self.pre_stored_file['y'] == x) & (self.pre_stored_file['x'] == y) & (np.array([set(Z) for Z in self.pre_stored_file['z']]) ==set(z))]
+            # union of both dataframes
+            row = pd.concat([rowXY, rowYX])
+
+            if len(row) >= 1:
+                if len(row) > 1:
+                    print(f"Warning: more than one row found in pre-stored file for statement {x} indep {y} given {z}. Average output reponse.")
+        
+                n_no = row['n_no'].sum()
+                n_yes = row['n_yes'].sum()
+                nn = row['n'].sum()
+                
+                if self.method == "stat":
+                    answ, pval = test_prop(n_no, n_yes, nn, null = self.null, alpha = self.alpha)
+                    if answ == "NO":
+                        return 0
+                    if answ == "YES":
+                        return 1
+
+                if self.method == "vot":
+                    if n_no > n_yes:
+                        # NO wins voting, not independent, significant evidence against conditional independence
+                        return 0
+                    if n_yes >  n_no:
+                        # YES wins voting, independent, or rather no significant evidence against conditional independence
+                        return 1
+                    if n_yes == n_no:
+                        if self.null == "YES":
+                            return 1
+                        if self.null == "NO":
+                            return 0
+
+                if self.method == "wvot":
+                    return 0
+                    ##TODO
+                        
+            if row.empty:
+                if self.dryrun:
+                    return 0
+                elif self.current_level != -1 and len(z) > self.current_level:
+                    return 1
+                else:
+                    self.test_list.append({'x': x, 'y': y, "z": z})     
+                    self.current_level = len(z)
+                    return 0
+        else:
+            return self.data_driven_test.pvalue(x,y,z)
+            
