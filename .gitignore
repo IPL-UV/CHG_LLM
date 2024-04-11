@@ -174,3 +174,7 @@ testing/*
 !testing/.gitkeep
 
 .vscode/
+
+scripts/test copy.ipynb
+scripts/test.ipynb
+gptci/gpt_ci2.py

@@ -16,9 +16,9 @@ from gptci import *
 import numpy as np
 import pandas as pd
 import ast
-
+from time import sleep
 import matplotlib.pyplot as plt
-
+from tqdm.asyncio import tqdm_asyncio
 
 def main():
     import argparse

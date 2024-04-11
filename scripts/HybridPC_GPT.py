@@ -27,7 +27,7 @@ from datetime import datetime
 
 
 
-def render_output(graph, variables, experiment_path):
+def render_output(graph, variables, experiment_path, alpha=0.05):
     # Create a directed graph
     G = nx.DiGraph()
 
@@ -44,7 +44,7 @@ def render_output(graph, variables, experiment_path):
     nx.draw(G, pos, with_labels=True, font_weight='bold', node_size=700, node_color='skyblue', font_size=8, arrowsize=15)
 
     # Save the plot as an image in the experiment folder
-    plot_file_path = experiment_path.joinpath('graph_plot.png')
+    plot_file_path = experiment_path.joinpath(f'graph_plot_{alpha}.png')
     plt.savefig(plot_file_path)
 
     # Close the plot to avoid displaying it
@@ -70,6 +70,11 @@ async def main():
     parser.add_argument("--method", type=str, default='vot', help='method used to make decision either vot, wvot or stat')
     parser.add_argument("--null", type=str, default='YES', help='null hypth either YES or NO')
     parser.add_argument("--dryrun", action="store_true", default = False, help="this option will not actually call the api")
+    parser.add_argument("--monthly", action="store_true", default = False, help="this option will base the data-driven results on monthly data")
+    parser.add_argument("--alpha", type=float, default = 0.05, help="Significance in the response to decide against the null hypothesis")
+    parser.add_argument("--alpha_PC", type=float, default = 0.05, help="Significance level for PC algorithm.")
+    parser.add_argument("--max_level", type=int, default = 100, help="Maximum level of CIT to consider from predictions. Return data-driven response for higher.")
+
 
     verbose_PC = True
     args = parser.parse_args()
@@ -107,25 +112,32 @@ async def main():
     with open(experiment_path.joinpath('horn_africa_food_listed.yaml')) as file:
         listed = yaml.load(file, Loader=yaml.FullLoader)
 
-    data = pd.read_csv(base_path.joinpath("horn_africa_food_data.csv")).astype(float)
+    if args.monthly:
+        data = pd.read_csv(base_path.joinpath("horn_africa_food_data_m.csv")).astype(float)
+    else:
+        data = pd.read_csv(base_path.joinpath("horn_africa_food_data.csv")).astype(float)
 
 
-    while True:
+    for l in range(1):
         pre_stored_file = pd.read_csv(base_path.joinpath('predictions.csv'), index_col=0)
         pre_stored_file['z'].fillna('[]', inplace=True)
         pre_stored_file['z'] = pre_stored_file['z'].apply(lambda x: ast.literal_eval(x))
+        #pre_stored_file['z'] = pre_stored_file['z'].apply(lambda x: str([x]) if (isinstance(x, str) and x!="[]") else x)
+        #pre_stored_file['z'] = pre_stored_file['z'].apply(lambda x: ast.literal_eval(x))
+        
 
         with open(experiment_path.joinpath('horn_africa_food_listed.yaml')) as file:
             listed = yaml.load(file, Loader=yaml.FullLoader)
         
         # while listed is not empty
         pc = bn.PC()
-        data_driven_test = bn.MutualInformation(data)
+        data_driven_test = bn.MutualInformation(data)  #(data)   #MutualInformation(data)
 
         gptcit = HybridGPTIndependenceTest(data_info, pre_stored_file = pre_stored_file, gpt_variables = gpt_variables, 
-                                        data_driven_test=data_driven_test, method=args.method, null=args.null)
-        graph = pc.estimate(gptcit, verbose=True, allow_bidirected = False, arc_blacklist=block_list)
-        render_output(graph, variables, experiment_path)
+                                        data_driven_test=data_driven_test, method=args.method, null=args.null, dryrun=args.dryrun,
+                                        alpha=args.alpha, max_level=args.max_level)
+        graph = pc.estimate(gptcit, verbose=True, allow_bidirected = False, arc_blacklist=block_list, alpha=args.alpha_PC) #
+        render_output(graph, variables, experiment_path, args.alpha)
         
         # Example list
         print("---------------------------")
@@ -163,22 +175,27 @@ async def main():
                                 model=args.model,
                                 n=args.n,
                                 temperature=args.temperature, 
-                                tdelay = 0,
+                                tdelay = 30,
                                 dryrun = args.dryrun, 
                                 verbose = False)
             
         ## append results to cis 
-        for i in range(len(cis)):
-            result = results[i][0] #generate_random_dict(n) # = 
-            
-            cis[i].update(result)
-            cis[i].update({"sha" : sha, "tmstmp" : tmstp, 
-                            "model" : "gpt-3.5-turbo", "temperature" : 0.6}) 
+        if not args.dryrun:
+            for i in range(len(cis)):
+                result = results[i][0] #generate_random_dict(n) # = 
+                
+                cis[i].update(result)
+                cis[i].update({"sha" : sha, "tmstmp" : tmstp, 
+                                "model" : "gpt-3.5-turbo", "temperature" : 0.6}) 
 
-        ######### prepare final results
-        cisdf = pd.DataFrame(cis)
-        pre_stored_file = pd.concat([pre_stored_file, cisdf], ignore_index=True)
-        pre_stored_file.to_csv(base_path.joinpath('predictions.csv'))
+                ######### prepare final results
+                if isinstance(cis[i]['z'], str):
+                    cis[i]['z'] = [cis[i]['z']]
+
+                cis[i]['z'] = [cis[i]['z']]
+                cisdf = pd.DataFrame(cis[i])
+                pre_stored_file = pd.concat([pre_stored_file, cisdf], ignore_index=True)
+                pre_stored_file.to_csv(base_path.joinpath('predictions.csv'))
 
         if experiment_path.joinpath('raw.yaml').exists():
             # If the file exists, open it in append mode

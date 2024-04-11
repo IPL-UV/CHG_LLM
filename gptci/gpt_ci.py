@@ -43,7 +43,7 @@ INST3 = ("You will be asked to provide your best guess and your uncertainty "
         "on the statistical independence between two variables "
         "potentially conditioned on a set of variables.\n"
         "Your answer should not be based on data or observations, "
-        "but only on the available knowledge.\n"
+        "but only on knowledge. The knowledge should go beyond the given context.\n"
         "Even when unsure or uncertain, provide your best guess (YES or NO) "
         "and the probability that your guess is correct.\n"
         "Answer only in the required format.\n")
@@ -281,13 +281,11 @@ def get_persona(data=None):
 def get_context(data=None):
     if data is None:
         return ""
-    if data.get('context') is None:
-        return ""
     return data['context']
 
 # this function generate the variables description 
 # It also add the context field at the beginning 
-def get_var_descritpions(data=None, x=None,y=None,z=None):
+def get_var_descriptions(data=None, x=None,y=None,z=None):
     if data is None:
         return "Consider the following variables: {x}, {y} and {z}."
     vs = [v['name'] for v in data['variables']]
@@ -301,15 +299,13 @@ def get_var_descritpions(data=None, x=None,y=None,z=None):
     if z is not None:
         if len(z) > 0:
             vs = vs + z
-    if data.get("context") is None:
-        out = "Consider the following variables:\n"
-    else:
-        out = ("{context}\n"
-                "Consider the following variables:\n").format(**data)
+
+    out = ("{context}\n"
+            "Consider the following system of variables:\n").format(**data)
     for v in data['variables']:
         #out = out + "- {name}: {description}\n".format(**v) 
-        if v['name'] in vs:
-            out = out + "- {name}: {description}\n".format(**v) 
+        #if v['name'] in vs:
+        out = out + "- {name}: {description}\n".format(**v) 
     return out
 
 # this function generate the cis in question format 
@@ -394,7 +390,7 @@ async def gpt_ci(x, y, z=None, data=None,
         if len(y) == 1:
             y = y[0]
     persona = get_persona(data)
-    vdescription = get_var_descritpions(data,x,y,z)
+    vdescription = get_var_descriptions(data,x,y,z)
     qci = get_qci(x,y,z)
     ci = get_ci(x,y,z)
     noci = get_noci(x,y,z)
@@ -410,7 +406,7 @@ async def gpt_ci(x, y, z=None, data=None,
                 results = [res['message']['content'] for res in response['choices']] 
                 parsed = [parse_response(res) for res in results] 
                 voted = voting(parsed)
-                return voted, parsed, results, prompt
+                return voted, parsed, results, prompt, f'{x},{y}|{z}'
             else: 
                 raise Exception("test exception")
         else:
@@ -428,7 +424,7 @@ async def gpt_ci(x, y, z=None, data=None,
             results = [res['message']['content'] for res in response['choices']] 
             parsed = [parse_response(res) for res in results] 
             voted = voting(parsed)
-            return voted, parsed, results, prompt
+            return voted, parsed, results, prompt, f'{x},{y}|{z}'
 
     except Exception as inst:
         print("error from server (likely)")
@@ -459,7 +455,7 @@ def gpt_ci_sync(x, y, z=None, data=None,
         if len(y) == 1:
             y = y[0]
     persona = get_persona(data)
-    vdescription = get_var_descritpions(data,x,y,z)
+    vdescription = get_var_descriptions(data,x,y,z)
     qci = get_qci(x,y,z)
     ci = get_ci(x,y,z)
     noci = get_noci(x,y,z)
@@ -554,7 +550,7 @@ def gpt_causal(x, y, z=None, data=None, temperature=None, model="gpt-3.5-turbo",
 
     persona = get_persona(data)
     context = get_context(data)
-    vdescription = get_var_descritpions(data,x,y,z)
+    vdescription = get_var_descriptions(data,x,y,z)
     ci = get_causal(x,y,z)
     if verbose:
         print(f"persona: {persona}")
@@ -618,7 +614,7 @@ def gpt_ci_list(cis, data=None, temperature=None, model="gpt-3.5-turbo-instruct"
         x = ci['x']
         y = ci['y']
         z = ci['z']
-        vdescription = get_var_descritpions(data, x, y, z)
+        vdescription = get_var_descriptions(data, x, y, z)
         ci = get_qci(x,y,z)
         prompt = persona + "\n"
         prompt = prompt + instruction + "\n"
@@ -781,7 +777,7 @@ class GPTIndependenceTest(IndependenceTest):
             ##TODO
 
 class HybridGPTIndependenceTest(IndependenceTest):
-    def __init__(self, data_info, pre_stored_file, gpt_variables = None, data_driven_test=None, method = "vot", null = "YES", test_list=None):
+    def __init__(self, data_info, pre_stored_file, gpt_variables = None, data_driven_test=None, method = "vot", null = "YES", test_list=None, dryrun=False, alpha=0.05, max_level=100):
         # IMPORTANT: Always call the parent class to initialize the C++ object.
         IndependenceTest.__init__(self)
         self.data_info = data_info
@@ -790,6 +786,9 @@ class HybridGPTIndependenceTest(IndependenceTest):
         self.gpt_variables = gpt_variables
         self.test_list = []
         self.method=method
+        self.dryrun=dryrun
+        self.alpha=alpha
+        self.max_level=max_level
         
         # extract variable names from data dictionary
         self.variables = [var['name'] for var in self.data_info['variables']]
@@ -816,7 +815,7 @@ class HybridGPTIndependenceTest(IndependenceTest):
             z = []
         
         # check if one of the strings in x+y+z is in gpt_variables
-        if len(set(z+[x]+[y]) & set(self.gpt_variables)) > 0:        
+        if len(set(z+[x]+[y]) & set(self.gpt_variables)) > 0 and len(z) <= self.max_level:       
             
             rowXY = self.pre_stored_file.loc[(self.pre_stored_file['x'] == x) & (self.pre_stored_file['y'] == y) & (np.array([set(Z) for Z in self.pre_stored_file['z']]) ==set(z))]
             rowYX = self.pre_stored_file.loc[(self.pre_stored_file['y'] == x) & (self.pre_stored_file['x'] == y) & (np.array([set(Z) for Z in self.pre_stored_file['z']]) ==set(z))]
@@ -832,7 +831,7 @@ class HybridGPTIndependenceTest(IndependenceTest):
                 nn = row['n'].sum()
                 
                 if self.method == "stat":
-                    answ, pval = test_prop(n_no, n_yes, nn, null = self.null, alpha = 0.05)
+                    answ, pval = test_prop(n_no, n_yes, nn, null = self.null, alpha = self.alpha)
                     if answ == "NO":
                         return 0
                     if answ == "YES":
@@ -856,7 +855,9 @@ class HybridGPTIndependenceTest(IndependenceTest):
                     ##TODO
                         
             if row.empty:
-                if self.current_level != -1 and len(z) > self.current_level:
+                if self.dryrun:
+                    return 0
+                elif self.current_level != -1 and len(z) > self.current_level:
                     return 1
                 else:
                     self.test_list.append({'x': x, 'y': y, "z": z})     
