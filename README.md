@@ -13,7 +13,7 @@
 tested with python3.10 
 
 - `python -m venv env` )
-- `source env/bin/activate` 
+- `source env/bin/activate`
 - `pip install -r requirements.txt` 
 - `cp .env.example .env` generate the `.env` file 
 - add your openai API key into the `.env` file (.env is already ignored in the `.gitignore` file but doubel check you are not pushing it) 

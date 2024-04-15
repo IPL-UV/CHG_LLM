@@ -1,0 +1,23 @@
+Context: "The Horn of Africa has witnessed a concerning rise in acute food insecurity, affecting 65 million
+people in 2022. Prolonged dry spells significantly contribute to this crisis. Various other factors, including hydrological conditions, food production capabilities, market access, insufficient humanitarian aid, conflicts, and displacement, contribute to the complex challenges households face. In this context, communities that rely solely on rainfall for their livelihoods are especially at risk, often requiring immediate humanitarian assistance to survive." 
+variables:
+ - name: ENSO
+   description: "El Nino Southern Oscillation"
+ - name: P
+   description: "Precipitation - Standardized Precipitation Index to characterize dry spells"
+ - name: VC
+   description: "Armed Conflict"
+ - name: LMP
+   description: "Local Market Prices - monthly market prices of livestock, staple food, and water"
+ - name: Y
+   description: "Yield - Shorghum yield production" -> Crop production.
+ - name: DD
+   description: "Drought Displacement - Drought-induced internal displacement."
+ - name: SD
+   description: "Somalia Districts"
+ - name: POP
+   description: "Population - Population of Somalian districts."
+ - name: RC
+   description: "Received Cash - Number of individuals that received cash via credit or remittances."
+ - name: GAM
+   description: "Global Acute Malnutrition"

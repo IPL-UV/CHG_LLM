@@ -1,0 +1,23 @@
+reference: "K. B. Korb, A. E. Nicholson. Bayesian Artificial Intelligence, 2nd edition, Section 2.2.2. CRC Press, 2010."
+field: "medicine"
+variables: 
+  - name : Smoker
+    description : "whether the patient is a smoker or not" 
+  - name : Cancer
+    description : "whether the patient is suffering from lung cancer or not" 
+  - name : Pollution
+    description : "whether the patient was exposed to polluted air or not" 
+  - name : Dyspnoea
+    description : "whether the patient is suffering from Dyspnoea" 
+  - name : Xray
+    description : "Denotes the positive result from a chest X-ray."
+context:  "Various related modelling factors influencing the probability of cancer in a patient at a medical center."
+graph:
+  - from: Pollution
+    to: Cancer
+  - from: Smoker
+    to: Cancer
+  - from: Cancer
+    to: Xray
+  - from: Cancer
+    to: Dyspnoea
