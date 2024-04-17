@@ -30,16 +30,12 @@ def main():
 
     parser = argparse.ArgumentParser(description="Running PC algorithm")
     parser.add_argument("data", type=str, help="Path to the YAML data file")
-    parser.add_argument("--model", type=str, default="gpt-3.5-turbo", help="model to use [%(default)s]")
-    parser.add_argument("--n", type=int, default=10, help="number of answer requested from model [%(default)s]")
-    parser.add_argument("--temperature", type=float, default=None, help="temperature for the model [%(default)s]")
     parser.add_argument("--out", type=str, default=None, help="if not None, the directory name where to save results [%(default)s]")
     parser.add_argument("--method", type=str, default='vot', help='method used to make decision either vot, wvot or stat')
     parser.add_argument("--null", type=str, default='YES', help='null hypth either YES or NO')
     parser.add_argument("--dryrun", action="store_true", default = False, help="this option will not actually call the api")
     # add argument that is either a file name or None
     parser.add_argument("--pre_stored_file", type=str, default=None, help="if not None, the file name where to load pre-stored results [%(default)s]")
-    parser.add_argument("--azure", action="store_true", default = False, help="use azure?")
 
     verbose_PC = True
     args = parser.parse_args()
