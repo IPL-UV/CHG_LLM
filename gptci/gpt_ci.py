@@ -508,8 +508,9 @@ async def gpt_ci(client, x, y, z=None, data=None,
         print("error from server (likely)")
         print(inst)
         if tryagain:
-            print(f"rescheduling task in {tdelay} seconds ...")
-            await asyncio.sleep(min(60, tdelay)) ## max wait 60 sec
+            td = min(100, tdelay) * random()
+            print(f"rescheduling task in {td} seconds ...")
+            await asyncio.sleep(td)
             res = await gpt_ci(client,x,y,z,data,model,temperature,n,
                 instruction,response_template,verbose,tryagain, tdelay*1.5, dryrun = dryrun)
             return res
@@ -538,7 +539,7 @@ async def gpt_cis(client, cis, data,
                                           dryrun = dryrun, verbose = verbose),
                                    name = i) 
         tasks.add(task)
-        await asyncio.sleep(0.01) ## wait 1/100 seconds between requests at least
+        await asyncio.sleep(0.1) ## wait 1/10 seconds between requests at least
     await tqdm_asyncio.gather(*tasks)
     #await asyncio.gather(*tasks)
 
@@ -573,20 +574,15 @@ def test_prop(n_no, n_yes, n, null = "YES", alpha = 0.05):
 
 # method can be vot (voting), wvot (weighted voting), stat (hyp test on proportions)
 class GPTIndependenceTest(IndependenceTest):
-    def __init__(self, data, model, n, temperature, method = "vot", null = "YES", verbose = False, dryrun = True, pre_stored_file=None):
+    def __init__(self, data, pre_stored_file, method = "vot", null = "YES"):
         # IMPORTANT: Always call the parent class to initialize the C++ object.
         IndependenceTest.__init__(self)
         self.data = data
-        self.model = model
-        self.n = n
-        self.temperature = temperature
+        self.pre_stored_file = pre_stored_file
         self.method = method
         self.null = null
-        self.verbose = verbose
-        self.dryrun = dryrun
         # extract variable names from data dictionary
         self.variables = [var['name'] for var in self.data['variables']]
-        self.pre_stored_file = pre_stored_file
 
     def num_variables(self):
         return len(self.variables)
@@ -648,46 +644,8 @@ class GPTIndependenceTest(IndependenceTest):
                     return 0
                     ##TODO
 
-        print(f"Warning: No row found in pre-stored file for statement {x} indep {y} given {z}. Ask Chat GPT.")
-        # If there are no pre-stored results, ask Chat GPT.
-        results = gpt_ci_sync(x, y, z, self.data,
-                                model=self.model,
-                                n=self.n,
-                                temperature=self.temperature,
-                                verbose=self.verbose,
-                                instruction = INST1, 
-                                response_template = RSPTMPL1,
-                                tryagain=True,
-                                tdelay=0,
-                                dryrun= self.dryrun)
-
-        n_no = results[0]['n_no']
-        n_yes = results[0]['n_yes']
-        nn = results[0]['n']
-
-        if self.method == "stat":
-            answ, pval = test_prop(n_no, n_yes, nn, null = self.null, alpha = 0.05)
-            if answ == "NO":
-                return 0
-            if answ == "YES":
-                return 1
-
-        if self.method == "vot":
-            if n_no > n_yes:
-                # NO wins voting, not independent, significant evidence against conditional independence
-                return 0
-            if n_yes >  n_no:
-                # YES wins voting, independent, or rather no significant evidence against conditional independence
-                return 1
-            if n_yes == n_no:
-                if self.null == "YES":
-                    return 1
-                if self.null == "NO":
-                    return 0
-
-        if self.method == "wvot":
-            return 0
-            ##TODO
+        print(f"Warning: No row found in pre-stored file for statement {x} indep {y} given {z}. return 0")
+        return 0
 
 class HybridGPTIndependenceTest(IndependenceTest):
     def __init__(self, data_info, pre_stored_file, gpt_variables = None, data_driven_test=None, method = "vot", null = "YES", test_list=None, dryrun=False, alpha=0.05, max_level=100):
