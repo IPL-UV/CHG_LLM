@@ -20,13 +20,14 @@ from time import sleep
 import matplotlib.pyplot as plt
 from tqdm.asyncio import tqdm_asyncio
 
+
+import argparse
+
 def main():
-    import argparse
-    import openai
+
     # load enviromental variables from .env
     load_dotenv()
 
-    openai.util.logger.setLevel(logging.WARNING)
     parser = argparse.ArgumentParser(description="Running PC algorithm")
     parser.add_argument("data", type=str, help="Path to the YAML data file")
     parser.add_argument("--model", type=str, default="gpt-3.5-turbo", help="model to use [%(default)s]")
@@ -38,10 +39,11 @@ def main():
     parser.add_argument("--dryrun", action="store_true", default = False, help="this option will not actually call the api")
     # add argument that is either a file name or None
     parser.add_argument("--pre_stored_file", type=str, default=None, help="if not None, the file name where to load pre-stored results [%(default)s]")
-
+    parser.add_argument("--azure", action="store_true", default = False, help="use azure?")
 
     verbose_PC = True
     args = parser.parse_args()
+
 
     with open(args.data) as file:
         data = yaml.safe_load(file)
@@ -57,7 +59,7 @@ def main():
     else:
         pre_stored_file = None
 
-    gptcit = GPTIndependenceTest(data, args.model, args.n, args.temperature, method = args.method, null = args.null, dryrun = args.dryrun, verbose=False, pre_stored_file=pre_stored_file)
+    gptcit = GPTIndependenceTest(data, pre_stored_file, method = args.method, null = args.null)
     pc = PC()
     graph = pc.estimate(gptcit, verbose=True, allow_bidirected = False)
     print(graph)
