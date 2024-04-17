@@ -644,8 +644,8 @@ class GPTIndependenceTest(IndependenceTest):
                     return 0
                     ##TODO
 
-        print(f"Warning: No row found in pre-stored file for statement {x} indep {y} given {z}. return 0")
-        return 0
+        print(f"Warning: No row found in pre-stored file for statement {x} indep {y} given {z}. return 1")
+        return 1
 
 class HybridGPTIndependenceTest(IndependenceTest):
     def __init__(self, data_info, pre_stored_file, gpt_variables = None, data_driven_test=None, method = "vot", null = "YES", test_list=None, dryrun=False, alpha=0.05, max_level=100):
