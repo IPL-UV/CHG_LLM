@@ -1,0 +1,14 @@
+field: "climate science"
+variables:
+  - name: NAO
+    description: "NAO index as a proxy for the position of the North Atlantic storm track"
+  - name: DK
+    description: "summer precipitations in Denmark"
+  - name: MED
+    description: "summer precipitation in the Mediterrean region"
+context: ""
+graph: 
+  - from: NAO
+    to: DK
+  - from: NAO
+    to: MED

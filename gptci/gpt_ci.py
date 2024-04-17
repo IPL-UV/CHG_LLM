@@ -1,5 +1,5 @@
 import asyncio
-import openai 
+
 import re
 import numpy as np
 from random import random
@@ -222,7 +222,7 @@ def voting(x):
     nNO = answs.count("NO")
     nYES = answs.count("YES") 
     n = len(x)
-    
+
     ## voting
     if nNO > nYES:
         out = "NO"
@@ -230,13 +230,13 @@ def voting(x):
         out = "YES"
     if nNO == nYES:
         out = "Uncertain"
-    
+
     ## masking None values
     confmask = [c is not None for c in confs] 
     nomask = [a == "NO" and c is not None for a, c in zip(answs, confs)]
     yesmask = [a == "YES" and c is not None for a, c in zip(answs, confs)]
-    
- 
+
+
     ## cleaned values
     confs_c = np.array(confs)[confmask]
     confs_no = np.array(confs)[nomask]
@@ -254,7 +254,7 @@ def voting(x):
         wout = "YES"
     if sumconfno == sumconfyes:
         wout = "Uncertain"
-    
+
     avgconf = None 
     avgconfno = None 
     avgconfyes = None 
@@ -322,7 +322,7 @@ def voting(x):
             "q75_rep_no_conf":  q75confno, 
             "q75_rep_yes_conf": q75confyes
             } 
-            
+
 
 def parse_response(response):
 
@@ -380,11 +380,11 @@ def get_var_descriptions(data=None, x=None,y=None,z=None):
             vs = vs + z
 
     out = ("{context}\n"
-            "Consider the following system of variables:\n").format(**data)
+            "Consider the following variables:\n").format(**data)
     for v in data['variables']:
         #out = out + "- {name}: {description}\n".format(**v) 
-        #if v['name'] in vs:
-        out = out + "- {name}: {description}\n".format(**v) 
+        if v['name'] in vs:
+            out = out + "- {name}: {description}\n".format(**v) 
     return out
 
 # this function generate the cis in question format 
@@ -452,9 +452,9 @@ tdelay: double
 dryrun: bool, default = False
  if True a test-run will be performed, without actual calls to the api 
 """
-async def gpt_ci(x, y, z=None, data=None,
+async def gpt_ci(client, x, y, z=None, data=None,
            model="gpt-3.5-turbo", temperature=None, n = 1,
-           instruction = INST3, response_template = RSPTMPL2,
+           instruction = INST1, response_template = RSPTMPL1,
            verbose = False, tryagain = False, tdelay = 1, dryrun = False, out = None):
 
     # if z is emtpy just put None
@@ -482,25 +482,24 @@ async def gpt_ci(x, y, z=None, data=None,
         if dryrun:
             if random() > 0:
                 response = {"choices": [{"message": {"content":"[NO (0%)]"}}] * n }
-                results = [res['message']['content'] for res in response['choices']] 
+                results = [res['message']['content'] for res in response["choices"]] 
                 parsed = [parse_response(res) for res in results] 
                 voted = voting(parsed)
                 return voted, parsed, results, prompt, f'{x},{y}|{z}'
             else: 
                 raise Exception("test exception")
         else:
-            response = await openai.ChatCompletion.acreate(
-                    model=model,
-                    temperature=temperature,
-                    n = n,
-                    messages=[
-                        {"role": "system", "content": persona},
-                        {"role": "system", "content": instruction},
-                        {"role": "user", "content": vdescription + "\n" + qci},
-                        {"role": "system", "content": response_template.format(ci=ci, noci=noci)}
-                        ])
+            response = await client.chat.completions.create(model=model,
+            temperature=temperature,
+            n = n,
+            messages=[
+                {"role": "system", "content": persona},
+                {"role": "system", "content": instruction},
+                {"role": "user", "content": vdescription + "\n" + qci},
+                {"role": "system", "content": response_template.format(ci=ci, noci=noci)}
+                ])
 
-            results = [res['message']['content'] for res in response['choices']] 
+            results = [res.message.content for res in response.choices] 
             parsed = [parse_response(res) for res in results] 
             voted = voting(parsed)
             return voted, parsed, results, prompt, f'{x},{y}|{z}'
@@ -510,83 +509,18 @@ async def gpt_ci(x, y, z=None, data=None,
         print(inst)
         if tryagain:
             print(f"rescheduling task in {tdelay} seconds ...")
-            await asyncio.sleep(tdelay)
-            res = await gpt_ci(x,y,z,data,model,temperature,n,
-                instruction,response_template,verbose,tryagain, tdelay*2, dryrun = dryrun)
-            return res
-        else:
-            return None
-
-def gpt_ci_sync(x, y, z=None, data=None,
-           model="gpt-3.5-turbo", temperature=None, n = 1,
-           instruction = INST3, response_template = RSPTMPL2,
-           verbose = False, tryagain = False, tdelay = 1, dryrun = False):
-
-    # if z is emtpy just put None
-    if z is not None:
-        if len(z) == 0:
-            z = None
-    # if x,y are list and length 1 reduce them
-    if type(x) is list:
-        if len(x) == 1:
-            x = x[0]
-    if type(y) is list:
-        if len(y) == 1:
-            y = y[0]
-    persona = get_persona(data)
-    vdescription = get_var_descriptions(data,x,y,z)
-    qci = get_qci(x,y,z)
-    ci = get_ci(x,y,z)
-    noci = get_noci(x,y,z)
-    prompt = f"system: {persona} \n system: {instruction} \n" 
-    prompt = prompt + f"user: {vdescription}\n{qci}" 
-    prompt = prompt +  f"system: {response_template.format(ci = ci, noci = noci)}\n"
-    if verbose:
-        print(prompt)
-    try:
-        if dryrun:
-            if random() > 0:
-                response = {"choices": [{"message": {"content":"[NO (0%)]"}}] * n }
-                results = [res['message']['content'] for res in response['choices']] 
-                parsed = [parse_response(res) for res in results] 
-                voted = voting(parsed)
-                return voted, parsed, results, prompt
-            else: 
-                raise Exception("test exception")
-        else:
-            response = openai.ChatCompletion.create(
-                    model=model,
-                    temperature=temperature,
-                    n = n,
-                    messages=[
-                        {"role": "system", "content": persona},
-                        {"role": "system", "content": instruction},
-                        {"role": "user", "content": vdescription + "\n" + qci},
-                        {"role": "system", "content": response_template.format(ci=ci, noci=noci)}
-                        ])
-
-            results = [res['message']['content'] for res in response['choices']] 
-            parsed = [parse_response(res) for res in results] 
-            voted = voting(parsed)
-            return voted, parsed, results, prompt
-
-    except Exception as inst:
-        print("error from server (likely)")
-        print(inst)
-        if tryagain:
-            print(f"rescheduling task in {tdelay} seconds ...")
-            sleep(tdelay)
-            res = gpt_ci_sync(x,y,z,data,model,temperature,n,
-                instruction,response_template,verbose,tryagain, tdelay*2, dryrun = dryrun)
+            await asyncio.sleep(min(60, tdelay)) ## max wait 60 sec
+            res = await gpt_ci(client,x,y,z,data,model,temperature,n,
+                instruction,response_template,verbose,tryagain, tdelay*1.5, dryrun = dryrun)
             return res
         else:
             return None
 
 
 ## async reqests for multiple cis
-async def gpt_cis(cis, data,
+async def gpt_cis(client, cis, data,
                   model = "gpt-3.5-turbo", n = 1, temperature = None, 
-                  instruction = INST3, response_template = RSPTMPL2,
+                  instruction = INST1, response_template = RSPTMPL1,
                   tdelay = 60, dryrun = False, verbose = False):
 
     tasks = set()
@@ -594,7 +528,7 @@ async def gpt_cis(cis, data,
         x = cis[i]['x']
         y = cis[i]['y']
         z = cis[i]['z']
-        task = asyncio.create_task(gpt_ci(x, y, z, data = data,
+        task = asyncio.create_task(gpt_ci(client, x, y, z, data = data,
                                           model = model, 
                                           temperature = temperature, 
                                           n = n,
@@ -610,7 +544,7 @@ async def gpt_cis(cis, data,
 
     print(f"total task executed: {len(tasks)}")
     results = [None] * len(cis)
-     
+
     # extract results in correct order
     for task in tasks:
         if task.done() and task.result() is not None:
@@ -618,107 +552,6 @@ async def gpt_cis(cis, data,
             results[i] = task.result()
 
     return results  
-
-
-### similar to ci testing but asking causal question....
-### not well done
-# TODO either improve it, move it in another file or delete it
-# TODO implement the changes in gpt_ci
-def gpt_causal(x, y, z=None, data=None, temperature=None, model="gpt-3.5-turbo",
-           n = 1, instruction = INSTCAUSAL, response_template = RSPTMPL1, verbose = False):
-
-    persona = get_persona(data)
-    context = get_context(data)
-    vdescription = get_var_descriptions(data,x,y,z)
-    ci = get_causal(x,y,z)
-    if verbose:
-        print(f"persona: {persona}")
-        print(f"instruction: {instruction}")
-        print(f"vdescription: {vdescription}")
-        print(f"ci: {ci}")
-        print(f"template: {response_template}")
-    try:
-        response = openai.ChatCompletion.create(
-                model=model,
-                temperature=temperature,
-                n = n,
-                messages=[
-                    {"role": "system", "content": persona},
-                    {"role": "system", "content": instruction},
-                    {"role": "user", "content": vdescription},
-                    {"role": "user", "content": ci},
-                    {"role": "system", "content": response_template}
-                    ])
-    except Exception as inst:
-        return None
-
-    results = [res['message']['content'] for res in response['choices']] 
-    parsed = [parse_response(res) for res in results] 
-    voted, nNO, nYES = voting(parsed)
-
-    return voted, parsed, results
-
-"""
-This function query gpt for a list of CI statements.
-Here we use the old completion api
-
-Patameters
-----------
-cis : list with dicts with 
-   x : str 
-    The name of the first variable
-   y : str 
-    The name of the second variable
-   z : list of str, optional
-    An eventual conditioning set
-data : dict 
- The data associate with the problem,
- at a aminimum it should contain variable descriptions
-temperature: float, default = 0.6
- The temperature parameter for the language model 
-model: str, default = "gpt-3.5-turbo"
- The name of the openai model to be called
-instruction: str, default = INST1 
- The instruction on the task 
-response_template: str
- The response instuction with template 
-"""
-def gpt_ci_list(cis, data=None, temperature=None, model="gpt-3.5-turbo-instruct",
-           instruction = INST1, response_template = RSPTMPL0, verbose = False):
-
-    persona = get_persona(data)
-    context = get_context(data)
-    prompts = []
-    for ci in cis:
-        x = ci['x']
-        y = ci['y']
-        z = ci['z']
-        vdescription = get_var_descriptions(data, x, y, z)
-        ci = get_qci(x,y,z)
-        prompt = persona + "\n"
-        prompt = prompt + instruction + "\n"
-        prompt = prompt + vdescription + "\n"
-        prompt = prompt + qci + "\n"
-        prompt = prompt + response_template 
-        if verbose:
-            print(prompt)
-        prompts = prompts + [prompt]
-
-    try:
-        response = openai.Completion.create(
-                model=model,
-                temperature=temperature,
-                prompt = prompts,
-                max_tokens = 100)
-    except Exception as inst:
-        print(inst)
-        return None
-
-    results = [""] * len(prompts)
-    for choice in response.choices:
-        results[choice.index] = choice.text 
-    
-    return [(parse_response(res), res) for res in results]
 
 
 def test_prop(n_no, n_yes, n, null = "YES", alpha = 0.05):
@@ -754,7 +587,7 @@ class GPTIndependenceTest(IndependenceTest):
         # extract variable names from data dictionary
         self.variables = [var['name'] for var in self.data['variables']]
         self.pre_stored_file = pre_stored_file
-            
+
     def num_variables(self):
         return len(self.variables)
 
@@ -773,7 +606,7 @@ class GPTIndependenceTest(IndependenceTest):
             z = [z]
         if z is None:
             z = []
-        
+
         # check if self.pre_stored_file is not None
         if not self.pre_stored_file is None:            
             # TODO: Should we average over both options X,Y and Y,X?
@@ -790,7 +623,7 @@ class GPTIndependenceTest(IndependenceTest):
                 n_no = row['n_no'].sum()
                 n_yes = row['n_yes'].sum()
                 nn = row['n'].sum()
-                
+
                 if self.method == "stat":
                     answ, pval = test_prop(n_no, n_yes, nn, null = self.null, alpha = 0.01)
                     if answ == "NO":
@@ -822,8 +655,8 @@ class GPTIndependenceTest(IndependenceTest):
                                 n=self.n,
                                 temperature=self.temperature,
                                 verbose=self.verbose,
-                                instruction = INST3, 
-                                response_template = RSPTMPL2,
+                                instruction = INST1, 
+                                response_template = RSPTMPL1,
                                 tryagain=True,
                                 tdelay=0,
                                 dryrun= self.dryrun)
@@ -869,12 +702,12 @@ class HybridGPTIndependenceTest(IndependenceTest):
         self.dryrun=dryrun
         self.alpha=alpha
         self.max_level=max_level
-        
+
         # extract variable names from data dictionary
         self.variables = [var['name'] for var in self.data_info['variables']]
         self.pre_stored_file = pre_stored_file
         self.current_level = -1 # value for level-wise increase with gpt queries
-            
+
     def num_variables(self):
         return len(self.variables)
 
@@ -893,10 +726,10 @@ class HybridGPTIndependenceTest(IndependenceTest):
             z = [z]
         if z is None:
             z = []
-        
+
         # check if one of the strings in x+y+z is in gpt_variables
         if len(set(z+[x]+[y]) & set(self.gpt_variables)) > 0 and len(z) <= self.max_level:       
-            
+
             rowXY = self.pre_stored_file.loc[(self.pre_stored_file['x'] == x) & (self.pre_stored_file['y'] == y) & (np.array([set(Z) for Z in self.pre_stored_file['z']]) ==set(z))]
             rowYX = self.pre_stored_file.loc[(self.pre_stored_file['y'] == x) & (self.pre_stored_file['x'] == y) & (np.array([set(Z) for Z in self.pre_stored_file['z']]) ==set(z))]
             # union of both dataframes
@@ -905,11 +738,11 @@ class HybridGPTIndependenceTest(IndependenceTest):
             if len(row) >= 1:
                 if len(row) > 1:
                     print(f"Warning: more than one row found in pre-stored file for statement {x} indep {y} given {z}. Average output reponse.")
-        
+
                 n_no = row['n_no'].sum()
                 n_yes = row['n_yes'].sum()
                 nn = row['n'].sum()
-                
+
                 if self.method == "stat":
                     answ, pval = test_prop(n_no, n_yes, nn, null = self.null, alpha = self.alpha)
                     if answ == "NO":
@@ -933,7 +766,7 @@ class HybridGPTIndependenceTest(IndependenceTest):
                 if self.method == "wvot":
                     return 0
                     ##TODO
-                        
+
             if row.empty:
                 if self.dryrun:
                     return 0
@@ -945,4 +778,4 @@ class HybridGPTIndependenceTest(IndependenceTest):
                     return 0
         else:
             return self.data_driven_test.pvalue(x,y,z)
-            
+

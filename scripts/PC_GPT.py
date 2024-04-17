@@ -25,7 +25,6 @@ def main():
     import openai
     # load enviromental variables from .env
     load_dotenv()
-    openai.api_key = os.getenv("OPENAI_API_KEY")
 
     openai.util.logger.setLevel(logging.WARNING)
     parser = argparse.ArgumentParser(description="Running PC algorithm")
@@ -39,7 +38,7 @@ def main():
     parser.add_argument("--dryrun", action="store_true", default = False, help="this option will not actually call the api")
     # add argument that is either a file name or None
     parser.add_argument("--pre_stored_file", type=str, default=None, help="if not None, the file name where to load pre-stored results [%(default)s]")
-    
+
 
     verbose_PC = True
     args = parser.parse_args()
@@ -57,13 +56,13 @@ def main():
         pre_stored_file['z'] = pre_stored_file['z'].apply(lambda x: ast.literal_eval(x))
     else:
         pre_stored_file = None
-    
+
     gptcit = GPTIndependenceTest(data, args.model, args.n, args.temperature, method = args.method, null = args.null, dryrun = args.dryrun, verbose=False, pre_stored_file=pre_stored_file)
     pc = PC()
     graph = pc.estimate(gptcit, verbose=True, allow_bidirected = False)
     print(graph)
     print(graph.nodes()) 
-    
+
     print(f"arcs: {graph.arcs()}")
     print(f"edges : {graph.edges()}")
 

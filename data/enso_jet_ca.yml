@@ -1,0 +1,14 @@
+field: "climate science"
+variables:
+  - name: ENSO
+    description: "El Niño-Southern Oscillation"
+  - name: JET
+    description: "position of the North Pacific jet stream"
+  - name: CA
+    description: "winter precipitation in California"
+context: ""
+graph: 
+  - from: ENSO
+    to: JET
+  - from: JET
+    to: CA

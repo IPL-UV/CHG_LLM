@@ -1,0 +1,16 @@
+field: "climate science"
+variables:
+  - name: ENSO
+    description: "El Niño-Southern Oscillation"
+  - name: JET
+    description: "position of the Southern Hemisphere jet stream"
+  - name: SPV
+    description: "late-spring breakdown of the stratospheric polar vortex"
+context: ""
+graph: 
+  - from: ENSO
+    to: JET
+  - from: ENSO
+    to: SPV
+  - from: SPV
+    to: JET

@@ -1,7 +1,7 @@
 import os
 import sys
 import yaml
-import openai
+from openai import OpenAI, AzureOpenAI
 
 from dotenv import load_dotenv
 from pgmpy.base import DAG
@@ -12,8 +12,6 @@ from gptci import *
 
 # load enviromental variables from .env
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
 
 def sample_CI_set(all_variables):
     # Sample the first variable
@@ -33,7 +31,7 @@ def sample_CI_set(all_variables):
 
 def graph_CI_test(var1, var2, conditioning_set, dag):
     all_CI = dag.get_independencies().__dict__['independencies']
-    
+
     for CI in all_CI:
         if var1 in list(CI.__dict__['event1']):
             if var2 in list(CI.__dict__['event2']):
@@ -49,10 +47,10 @@ def graph_CI_test(var1, var2, conditioning_set, dag):
 def sample_CI_statements(data):
     all_variables = list(set([data['graph'][i]['from'] for i in range(len(data['graph']))] + [data['graph'][i]['to'] for i in range(len(data['graph']))]))
     dag = DAG([(data['graph'][i]['from'], data['graph'][i]['to']) for i in range(len(data['graph']))])
-    
+
     var1, var2, conditioning_set = sample_CI_set(all_variables)
     statement_valid = graph_CI_test(var1, var2, conditioning_set, dag)
-    
+
     return var1, var2, conditioning_set, statement_valid
 
 
@@ -67,8 +65,11 @@ def ci_test(var1, var2, additional_vars, yaml_file):
     print("---------------")
 
     print(f"asking if {var1} and {var2} are independent given {additional_vars}")
-    out = gpt_ci(var1, var2, additional_vars, data, verbose = True)
-    
+    client = OpenAI(
+             api_key=os.environ['OPENAI_API_KEY'],  # this is also the default, it can be omitted
+            )
+    out = gpt_ci(client, var1, var2, additional_vars, data, verbose = True)
+
     return out
 
 def random_ci_test(yaml_file):
@@ -86,15 +87,18 @@ def random_ci_test(yaml_file):
     print("---------------")
 
     print(f"asking if {var1} and {var2} are independent given {additional_vars}")
-    out = gpt_ci(var1, var2, additional_vars, data, verbose = True)
-    
-    
+    client = OpenAI(
+             api_key=os.environ['OPENAI_API_KEY'],  # this is also the default, it can be omitted
+            )
+    out = gpt_ci(client, var1, var2, additional_vars, data, verbose = True)
+
+
     return out
 
 
 def main():
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Perform conditional independence test")
     parser.add_argument("--yaml_file", type=str, help="Path to the YAML data file")
     parser.add_argument("--var1", type=str, help="Name of the first variable")

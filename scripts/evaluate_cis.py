@@ -19,6 +19,10 @@ import git
 
 from sklearn.metrics import accuracy_score
 
+
+from openai import AsyncOpenAI, AsyncAzureOpenAI
+
+
 # https://docs.python.org/3/library/itertools.html
 def powerset(iterable, m = None):
     "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
@@ -35,7 +39,7 @@ def get_vars(edges):
 def get_dag(edges):
     dag = DAG([(e['from'], e['to']) for e in edges])
     return dag
- 
+
 
 def get_all_cis(data, max_cond_set = None):
     variables = [v['name'] for v in data['variables']]
@@ -68,7 +72,7 @@ def get_all_cis(data, max_cond_set = None):
                     "y": variables[i],
                     "z": list(condset),
                     "answ": answ}]
-                                    
+
     return cis
 
 
@@ -126,7 +130,7 @@ def sample_cis(data, k = 1, min_cond_set = 0, max_cond_set = None):
     for i in range(k):
         variables = [v['name'] for v in data['variables']]
         ci = sample_ci(variables, min_cond_set, max_cond_set)
-        
+
         if data.get('graph') is not None:
             if all_indep.contains(get_assertion(**ci)):
                 ci['answ'] = "YES"
@@ -136,15 +140,13 @@ def sample_cis(data, k = 1, min_cond_set = 0, max_cond_set = None):
             ci['answ'] = "UNK"
         cis[i] = ci
     return cis
-    
+
 async def main():
     import argparse
     import openai
     # load enviromental variables from .env
     load_dotenv()
-    openai.api_key = os.getenv("OPENAI_API_KEY")
 
-    openai.util.logger.setLevel(logging.WARNING)
     parser = argparse.ArgumentParser(description="Evaluating conditional independence test")
     parser.add_argument("data", type=str, help="Path to the YAML data file")
     parser.add_argument("--listed", action="store_true", help="evaluate listed cis")
@@ -158,15 +160,29 @@ async def main():
     parser.add_argument("--out", type=str, default=None, help="if not None, the directory name where to save results [%(default)s]")
     parser.add_argument("--dryrun", action="store_true", default = False, help="this option will not actually call the api")
     parser.add_argument("--verbose", action="store_true", default = False, help="verbose?")
+    parser.add_argument("--azure", action="store_true", default = False, help="use azure?")
 
     args = parser.parse_args()
+
+    if args.azure:
+        client = AsyncAzureOpenAI(
+                api_key=os.getenv("AZURE_OPENAI_API_KEY"),  
+                api_version="2023-12-01-preview",
+                azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
+                )
+    else:    
+        client = AsyncOpenAI(
+                    api_key=os.environ['OPENAI_API_KEY'],  # this is also the default, it can be omitted
+                    )
+
+    #client.util.logger.setLevel(logging.WARNING)
     data_file = args.data 
     with open(data_file) as file:
         data = yaml.safe_load(file)
 
     for v in data['variables']:
         print("{name}: {description}".format(**v))
-    
+
     cis = []
 
     if args.listed:
@@ -183,7 +199,7 @@ async def main():
         else:
             valid_cis = get_cis(data['graph'], translate = True) 
             cis = cis + random.sample(valid_cis, k = min(args.valid, len(valid_cis)))
-        
+
 
     if args.random > 0:
         if data.get("graph") is None:
@@ -210,22 +226,22 @@ async def main():
         tdelay = 0
     else:
         tdelay = 10
-    
+
     ### tmstamp and git hash 
     tmstp = str(datetime.now())
     repo = git.Repo(search_parent_directories=True)
     sha = repo.head.object.hexsha
 
     ## get results 
-    results = await gpt_cis(cis, data,
+    results = await gpt_cis(client, cis, data,
             model=args.model,
             n=args.n,
             temperature=args.temperature, tdelay = tdelay,
             dryrun = args.dryrun, verbose = args.verbose)
-    
+
     ## append results to cis 
     for i in range(len(cis)):
-        
+
         cis[i].update(results[i][0])
         cis[i].update({"sha" : sha, "tmstmp" : tmstp, 
                        "model" : args.model, "temperature" : args.temperature}) 

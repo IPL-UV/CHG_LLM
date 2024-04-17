@@ -58,7 +58,6 @@ async def main():
     import openai
     # load enviromental variables from .env
     load_dotenv()
-    openai.api_key = os.getenv("OPENAI_API_KEY")
 
     openai.util.logger.setLevel(logging.WARNING)
     parser = argparse.ArgumentParser(description="Running PC algorithm")
@@ -100,7 +99,6 @@ async def main():
 
     # read relevant files:
     load_dotenv()
-    openai.api_key = os.getenv("OPENAI_API_KEY")
     openai.util.logger.setLevel(logging.WARNING)
 
     with open(experiment_path.joinpath('horn_africa_food_restrictions.yaml')) as file:
@@ -124,11 +122,11 @@ async def main():
         pre_stored_file['z'] = pre_stored_file['z'].apply(lambda x: ast.literal_eval(x))
         #pre_stored_file['z'] = pre_stored_file['z'].apply(lambda x: str([x]) if (isinstance(x, str) and x!="[]") else x)
         #pre_stored_file['z'] = pre_stored_file['z'].apply(lambda x: ast.literal_eval(x))
-        
+
 
         with open(experiment_path.joinpath('horn_africa_food_listed.yaml')) as file:
             listed = yaml.load(file, Loader=yaml.FullLoader)
-        
+
         # while listed is not empty
         pc = bn.PC()
         data_driven_test = bn.MutualInformation(data)  #(data)   #MutualInformation(data)
@@ -138,7 +136,7 @@ async def main():
                                         alpha=args.alpha, max_level=args.max_level)
         graph = pc.estimate(gptcit, verbose=True, allow_bidirected = False, arc_blacklist=block_list, alpha=args.alpha_PC) #
         render_output(graph, variables, experiment_path, args.alpha)
-        
+
         # Example list
         print("---------------------------")
         print(f"To be tested: {gptcit.test_list}")
@@ -147,10 +145,10 @@ async def main():
         # Write the list to the YAML file
         with open(experiment_path.joinpath('horn_africa_food_listed.yaml'), 'w') as yaml_file:
             yaml.dump(gptcit.test_list, yaml_file, default_flow_style=False)
-            
+
         with open(experiment_path.joinpath('horn_africa_food_listed.yaml')) as file:
             listed = yaml.load(file, Loader=yaml.FullLoader)
-            
+
 
         print("---------------------------")
         print("listed ci statements in the data file")
@@ -159,8 +157,8 @@ async def main():
             ci.update({"type":"listed"})
             cis.append(ci)
             cis.append({'x':ci['y'], 'y':ci['x'], 'z':ci['z'], 'type':'listed'})
-        
-                
+
+
         ### tmstamp and git hash 
         tmstp = str(datetime.now())
         repo = git.Repo(search_parent_directories=True)
@@ -169,7 +167,7 @@ async def main():
         args.tmstp = tmstp
         args.repo = repo
         args.sha = sha
-        
+
         # get results 
         results = await gpt_cis(cis, data_info,
                                 model=args.model,
@@ -178,12 +176,12 @@ async def main():
                                 tdelay = 30,
                                 dryrun = args.dryrun, 
                                 verbose = False)
-            
+
         ## append results to cis 
         if not args.dryrun:
             for i in range(len(cis)):
                 result = results[i][0] #generate_random_dict(n) # = 
-                
+
                 cis[i].update(result)
                 cis[i].update({"sha" : sha, "tmstmp" : tmstp, 
                                 "model" : "gpt-3.5-turbo", "temperature" : 0.6}) 
