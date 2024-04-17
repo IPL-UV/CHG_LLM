@@ -539,7 +539,7 @@ async def gpt_cis(client, cis, data,
                                           dryrun = dryrun, verbose = verbose),
                                    name = i) 
         tasks.add(task)
-        await asyncio.sleep(0.1) ## wait 1/10 seconds between requests at least
+        await asyncio.sleep(0.5) ## wait 1/10 seconds between requests at least
     await tqdm_asyncio.gather(*tasks)
     #await asyncio.gather(*tasks)
 
@@ -644,8 +644,8 @@ class GPTIndependenceTest(IndependenceTest):
                     return 0
                     ##TODO
 
-        print(f"Warning: No row found in pre-stored file for statement {x} indep {y} given {z}. return 1")
-        return 1
+        #print(f"Warning: No row found in pre-stored file for statement {x} indep {y} given {z}. return 0")
+        return 0
 
 class HybridGPTIndependenceTest(IndependenceTest):
     def __init__(self, data_info, pre_stored_file, gpt_variables = None, data_driven_test=None, method = "vot", null = "YES", test_list=None, dryrun=False, alpha=0.05, max_level=100):
