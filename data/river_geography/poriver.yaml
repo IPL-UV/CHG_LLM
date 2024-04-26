@@ -1,0 +1,19 @@
+variables:
+  - name: DB
+    description: "flow of water in the Dorea Baltea river, measured in Ivrea"
+  - name: TN
+    description: "flow of water in the Tanaro river, measured in Asti"
+  - name: TC
+    description: "flow of water in the Ticino river, measured in Abbiategrasso"
+  - name: TA
+    description: "flow of water in the Taro river, measured near Parma"
+  - name: PO-T
+    description: "flow of water in the Po river, measured in Turin"
+  - name: PO-PA
+    description: "flow of water in the Po river, measured close to Pavia"
+  - name: PO-PI
+    description: "flow of the water in the Po river, measured close to Piacenza"
+  - name: PO-FE
+    description: "flow of the water in the Po river, measured close to Ferrara"
+context: "Variables describing the flow of water for the Po river and other affluents in the Po valley in north Italy."
+field: "geography and hydrology" 
