@@ -9,8 +9,8 @@
 |cancer_bnl|smoking and cancer|5|y|y|textbook|
 |horn_africa_food|displacement in africa|10|y|n|-|
 |horn_africa food new|displacement in africa|11|y|n|-|
-|SACHS||11||||
-|smoking|smoking and cancer|4||||
+|SACHS|cellular signalling networks|11|y|y|expert|
+|smoking|smoking and cancer|4|y|y|textbook|
 ---
 
 
