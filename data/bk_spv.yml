@@ -1,0 +1,28 @@
+field: "climate science"
+variables:
+  - name: ENSO
+    description: "El Niño-Southern Oscillation"
+  - name: MJO
+    description: "Madden–Julian oscillation"
+  - name: NP
+    description: "North Pacific sea level pressure"
+  - name: BK
+    description: "Barents and Kara sea ice in autumn"
+  - name: URAL
+    description: "sea level pressure over the Ural Mountains region"
+  - name: SPV
+    description: "wintertime Northern Hemisphere stratospheric polar vortex"
+context: ""
+graph: 
+  - from: ENSO
+    to: NP
+  - from: MJO
+    to: NP
+  - from: NP
+    to: SPV
+  - from: NP
+    to: BK
+  - from: BK
+    to: URAL
+  - from: URAL
+    to: SPV
