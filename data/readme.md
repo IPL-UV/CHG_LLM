@@ -1,4 +1,9 @@
 # General
+
+| dataset | description | num vars |  data? | GT type||
+|---|---|---|---|---||
+---
+
 - agriculture
 - asia_bnl
 - burglary
