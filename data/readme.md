@@ -1,7 +1,7 @@
 # General
 
-| dataset | description | num vars |  data? | GT type||
-|---|---|---|---|---||
+| dataset | description | num vars |  data? | GT type|
+|---|---|---|---|---|
 ---
 
 - agriculture
