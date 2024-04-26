@@ -1,16 +1,16 @@
 # General
 
-| dataset | description | num vars |  data? | GT type|
-|---|---|---|---|---|
-|agriculture|||||
-|asia_bnl|||||
-|burglary|||||
-|burglary_bnl|||||
-|cancer_bnl|||||
-|horn_africa_food|||||
-|horn_africa food new|||||
-|SACHS|||||
-|smoking|||||
+| dataset | description | num vars |  data? | GT?| type|
+|---|---|---|---|---|---|
+|agriculture||13||||
+|asia_bnl||8||||
+|burglary||5||||
+|burglary_bnl||5||||
+|cancer_bnl||5||||
+|horn_africa_food||10||no||
+|horn_africa food new||11||no||
+|SACHS||11||||
+|smoking|smoking and cancer|4||||
 ---
 
 
