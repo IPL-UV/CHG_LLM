@@ -225,7 +225,7 @@ async def main():
     if args.dryrun:
         tdelay = 0
     else:
-        tdelay = 10
+        tdelay = 2
 
     ### tmstamp and git hash 
     tmstp = str(datetime.now())
