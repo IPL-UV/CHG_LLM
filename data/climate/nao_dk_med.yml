@@ -6,7 +6,7 @@ variables:
     description: "summer precipitations in Denmark"
   - name: MED
     description: "summer precipitation in the Mediterrean region"
-context: ""
+context: "variables are considered de-trended with the goal to remove the effects of climate change."
 graph: 
   - from: NAO
     to: DK

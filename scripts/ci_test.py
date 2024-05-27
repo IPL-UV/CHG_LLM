@@ -100,17 +100,17 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Perform conditional independence test")
-    parser.add_argument("--yaml_file", type=str, help="Path to the YAML data file")
-    parser.add_argument("--var1", type=str, help="Name of the first variable")
-    parser.add_argument("--var2", type=str, help="Name of the second variable")
-    parser.add_argument("--additional_vars", nargs="*", type=str, help="Additional variables as a list")
+    parser.add_argument("data", type=str, help="Path to the YAML data file")
+    parser.add_argument("var1", type=str, help="Name of the first variable")
+    parser.add_argument("var2", type=str, help="Name of the second variable")
+    parser.add_argument("additional_vars", nargs="*", type=str, help="Additional variables as a list")
     parser.add_argument("--random", type=bool, help="If test should be sampled randomly.")
 
     args = parser.parse_args()
     if args.random:
-        result = random_ci_test(args.yaml_file)
+        result = random_ci_test(args.data)
     else:
-        result = ci_test(args.var1, args.var2, args.additional_vars, args.yaml_file)
+        result = ci_test(args.var1, args.var2, args.additional_vars, args.data)
     print(result)
 
 if __name__ == "__main__":

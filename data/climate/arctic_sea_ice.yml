@@ -1,0 +1,118 @@
+reference: 
+  title: "Benchmarking of Data-Driven Causality Discovery Approaches in the Interactions of Arctic Sea Ice and Atmosphere" 
+  doi : "https://doi.org/10.3389/fdata.2021.642182"
+field: "climate science"
+variables:
+  - name: GH
+    description: "Geopotential heights averaged from 200 hPa, 500 hPa, and 850 hPa"
+  - name: RH
+    description: "Relative humidity averaged from 1000-300 hPa"
+  - name: SLP
+    description: "Sea level pressure"
+  - name: u10m
+    description: "Zonal (u-component) wind at 10 m"
+  - name: v10m
+    description: "Meridional (v-component) wind at 10 m"
+  - name: HFLX
+    description: "Sensible plus heat flux"
+  - name: Precip
+    description: "Total precipitation"
+  - name: CC
+    description: "Total cloud cover"
+  - name: CW
+    description: "Total cloud water path"
+  - name: SW
+    description: "Net shortwave flux at the surface"
+  - name: LW
+    description: "Net longwave flux at the surface"
+  - name: Sea_ice
+    description: "Sea ice extent in the Northern Hemisphere"
+context: "The study area where the variables are considered is 60-degrees N northward"
+ci-statements:
+  - x: Sea_ice
+    y: Precip
+    z: null
+    answ: "NO"
+  - x: Sea_ice
+    y: HFLX
+    z: null
+    answ: "NO"
+pgraph:
+  - from: SW
+    to: Sea_ice
+  - from: LW
+    to: Sea_ice
+  - from: GH
+    to: LW
+  - from: GH
+    to: RH
+  - from: GH
+    to: SLP
+  - from: RH
+    to: CC
+  - from: RH
+    to: CW
+  - from: RH
+    to: LW
+  - from: SLP
+    to: RH
+  - from: SLP
+    to: SH
+  - from: SLP
+    to: u10m
+  - from: SLP
+    to: v10m
+  - from: SLP
+    to: Sea_ice
+  - from: u10m
+    to: Sea_ice
+  - from: u10m
+    to: HFLX
+  - from: v10m
+    to: Sea_ice
+  - from: HFLX
+    to: SLP
+  - from: v10m
+    to: HFLX
+  - from: HFLX
+    to: Sea_ice
+  - from: HFLX
+    to: u10m
+  - from: HFLX
+    to: v10m
+  - from: HFLX
+    to: Precip
+  - from: HFLX
+    to: CW
+  - from: HFLX
+    to: CC
+  - from: Precip
+    to: Sea_ice
+  - from: Precip
+    to: CW
+  - from: Precip
+    to: CC
+  - from: Precip
+    to: RH
+  - from: Precip
+    to: HFLX
+  - from: CW
+    to: HFLX
+  - from: CW
+    to: Precip
+  - from: CW
+    to: LW
+  - from: CW
+    to: SW
+  - from: CW
+    to: RH
+  - from: CC
+    to: HFLX
+  - from: CC
+    to: RH
+  - from: CC
+    to: Precip
+  - from: CC
+    to: SW
+  - from: CC
+    to: LW
