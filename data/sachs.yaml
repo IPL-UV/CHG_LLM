@@ -41,7 +41,9 @@ graph:
   - from: PKC
     to: P38
   - from: PKC
-    to: PKA
+    to: Raf
+  - from: PKC
+    to: Mek
   - from: PKA
     to: P38
   - from: PKA
@@ -58,12 +60,6 @@ graph:
     to: Mek
   - from: Mek
     to: Erk
-  - from: Erk
-    to: Akt
-  - from: PKC
-    to: Mek
-  - from: PKC
-    to: Raf
 ci-statements:
   - x: Mek
     y: Erk 
