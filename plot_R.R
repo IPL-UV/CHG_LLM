@@ -7,11 +7,23 @@ library(dplyr)
 
 ## load data
 
-allfiles <- list.files(path = "results/", pattern = "predictions.csv", recursive = TRUE, full.names = TRUE)
+allfiles <- list.files(path = "results_good/", pattern = "predictions.csv", recursive = TRUE, full.names = TRUE)
 
 alldata <- lapply(allfiles, read.csv, stringsAsFactors = FALSE)
 
 
+sachs_estimated <- read.csv("sachs_estimated/sachs_estimated/2024-05-27 15:59:10.012169/predictions.csv", stringsAsFactors = FALSE)
+sachs_gt <- read.csv("results_good/gpt_35/sachs/2024-05-27 16:12:03.647301/predictions.csv", stringsAsFactors = FALSE)$answ
+sachs_estimated$pred <- sachs_estimated$answ
+sachs_estimated$answ <- sachs_gt
+sachs_estimated$wpred <- sachs_estimated$stat_yes <- sachs_estimated$stat_no <- sachs_estimated$pred
+sachs_estimated$model <- "data"
+sachs_estimated$method <- "data"
+sachs_estimated$data <- "sachs"
+sachs_estimated$temperature
+
+
+alldata <- c(alldata, list(sachs_estimated))
 DDD <- reshape2::melt(alldata, measure = c("pred", "stat_yes", "stat_no", "wpred"), 
                       value.name = "prediction", variable.name = "method")
 
@@ -23,13 +35,17 @@ RES <- DDD %>% group_by(model, data, method, temperature) %>% summarise(accuracy
 
 
 
-ggplot(RES) + 
-  geom_col(aes(x  = model, y = value)) +
-  facet_grid(rows = vars(data), cols = vars(variable), scales = "free")
+#ggplot(RES) + 
+##  geom_col(aes(x  = model, y = value)) +
+#  facet_grid(rows = vars(data), cols = vars(variable), scales = "free")
 
 
+### make table #### 
 library(knitr)
-RES[, c(2,1,3,4, 5, 6, 7)] %>% filter(method %in% c("pred", "stat_yes")) %>% 
-  group_by(data) %>% arrange(desc(data)) %>% kable()
+RES %>% filter(method %in% c("pred", "stat_yes", "stat_no", "data") & is.na(temperature)) %>%
+  select(data, model, method, accuracy, f1, precision) %>%
+  group_by(data) %>% arrange(desc(data)) %>% 
+  xtable::xtable() %>% print(booktabs = TRUE, include.rownames = FALSE,
+                             floating = FALSE, file = "table_results_cis.tex")
 
 

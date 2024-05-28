@@ -539,7 +539,14 @@ async def gpt_cis(client, cis, data,
                                           dryrun = dryrun, verbose = verbose),
                                    name = i) 
         tasks.add(task)
-        await asyncio.sleep(0.5) ## wait 1/10 seconds between requests at least
+        if tdelay > 0:
+            await asyncio.sleep(0.5) ## wait 1/10 seconds between requests at least
+            if i > 10:
+                await asyncio.sleep(2)
+            if i > 50:
+                await asyncio.sleep(10)
+            if i > 200:
+                await asyncio.sleep(20)
     await tqdm_asyncio.gather(*tasks)
     #await asyncio.gather(*tasks)
 

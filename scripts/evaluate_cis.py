@@ -47,8 +47,11 @@ def get_all_cis(data, max_cond_set = None):
         edges = data['graph']
         dag = get_dag(edges)
         all_indep = dag.get_independencies()
+        print(all_indep)
+        print("got indeps")
     cis = []
     for i in range(1,len(variables)):
+        print(i)
         for j  in range(i):
             tmp = set(variables.copy())
             tmp.remove(variables[i])
@@ -62,7 +65,8 @@ def get_all_cis(data, max_cond_set = None):
                 answ = "UNK"
 
                 if data.get('graph') is not None:
-                    if all_indep.contains(get_assertion(**ci)):
+                    if not dag.is_dconnected(variables[i], variables[j], condset):
+                    #if all_indep.contains(get_assertion(**ci)):
                         answ = "YES"
                     else:
                         answ = "NO"
@@ -225,13 +229,14 @@ async def main():
     if args.dryrun:
         tdelay = 0
     else:
-        tdelay = 2
+        tdelay = 10
 
     ### tmstamp and git hash 
     tmstp = str(datetime.now())
     repo = git.Repo(search_parent_directories=True)
     sha = repo.head.object.hexsha
 
+    print("now call api")
     ## get results 
     results = await gpt_cis(client, cis, data,
             model=args.model,

@@ -57,7 +57,7 @@ def main():
 
     gptcit = GPTIndependenceTest(data, pre_stored_file, method = args.method, null = args.null)
     pc = PC()
-    graph = pc.estimate(gptcit, verbose=True, allow_bidirected = False)
+    graph = pc.estimate(gptcit, verbose=True, allow_bidirected = True)
     print(graph)
     print(graph.nodes()) 
 
@@ -73,7 +73,17 @@ def main():
         #    f.write(f"arcs: {arcs}")
 
         with open(args.out + '/graph.txt', 'w') as f:
-            f.write(f"arcs: {graph.arcs()}\nedges: {graph.edges()}")
+            f.write("\\begin{tikzpicture}\n")
+            f.write("%% nodes\n")
+            for n in graph.nodes():
+                f.write(f"\\node ({n}) \u007b{n}\u007d;\n")
+            f.write("%% arcs\n")
+            for a in graph.arcs():
+                f.write(f"\draw[->] ({a[0]}) -- ({a[1]});\n")
+            f.write("%% edges\n")
+            for a in graph.edges():
+                f.write(f"\draw[-] ({a[0]}) -- ({a[1]});\n")
+            f.write("\\end{tikzpicture}")
         #dag_vis.savefig(args.out + '/graph.png')
 
 
