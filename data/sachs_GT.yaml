@@ -1,0 +1,84 @@
+variables:
+  - name: PKC
+    description: "Detects phosphorylated PKC-alpha,-betaI,-betaII,  -delta,-epsilon,-eta,  and  -theta-isoforms only at C-terminal residue homologous to S660 of PKC-betaII"
+  - name: PKA
+    description: "Detects proteins and peptides con-taining a phospho-Ser/Thr residue  with  arginine  at  the  –3 position"
+  - name: Raf
+    description: "Phosphorylation at S259"
+  - name: Mek
+    description: "Phosphorylation at S217 and S221"
+  - name: Erk
+    description: "Phosphorylation at T202 and Y204"
+  - name: Akt
+    description: "Phosphorylation at S473"
+  - name: Jnk
+    description: "Phosphorylation at T183 and Y185"
+  - name: P38
+    description: "Phosphorylation at T180 and Y182"
+  - name: Plcg
+    description: "Phosphorylation at Y783"
+  - name: PIP3
+    description: "Detects PIP3"
+  - name: PIP2 
+    description: "Detects PIP2"
+field: "cellular signaling networks"
+context: "Flow  cytometry  measurements  of  11  phosphorylated  proteins  andphospholipids in single-cels data."  
+graph:
+  - from: PIP3
+    to: Plcg
+  - from: Plcg
+    to: PIP2
+  - from: PIP3
+    to: Akt
+  - from: PIP3
+    to: PIP2
+  - from: PIP2
+    to: PKC
+  - from: Plcg
+    to: PKC
+  - from: PKC
+    to: Jnk
+  - from: PKC
+    to: P38
+  - from: PKC
+    to: Raf
+  - from: PKC
+    to: Mek
+  - from: PKA
+    to: P38
+  - from: PKA
+    to: Jnk
+  - from: PKA
+    to: Raf
+  - from: PKA
+    to: Mek
+  - from: PKA
+    to: Erk
+  - from: PKA
+    to: Akt
+  - from: Raf
+    to: Mek
+  - from: Mek
+    to: Erk
+ci-statements:
+  - x: Mek
+    y: Erk 
+    z: null
+    answ: "NO"
+    comment: "Direct phosphorylation"
+  - x: PKC
+    y: Jnk
+    z: null
+    answ: "NO"
+    comment: "Indirect signaling"
+  - x: Raf
+    y: Erk
+    z: 
+      - Mek
+    answ: "YES"
+    comment: "Dismissing arcs - mediator" 
+  - x: PKC
+    y: Mek
+    z: 
+      - Raf
+    answ: "NO"
