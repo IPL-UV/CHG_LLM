@@ -92,6 +92,8 @@ graph:
     to: Erk
   - from: Raf
     to: Plcg
+  - from: Raf
+    to: PKC
   - from: Plcg
     to: PKA
   - from: Plcg
