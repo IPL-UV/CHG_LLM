@@ -48,12 +48,12 @@ graph:
     to: Plcg
   - from: PKC
     to: Mek
-  - from: P38
-    to: PKC
-  - from: P38
-    to: Raf
   - from: Raf
-    to: P38
+    to: Erk
+  - from: Raf
+    to: PKC
+  - from: Raf
+    to: Mek
   - from: Plcg
     to: PIP2
   - from: Jnk
